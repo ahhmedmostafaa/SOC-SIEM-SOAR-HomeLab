@@ -6,6 +6,15 @@
 | **Data Source** | Windows Security Log, Event IDs 4728 / 4732 / 4756 |
 | **Severity Logic** | Domain Admins / Enterprise Admins / Schema Admins → Critical, any other admin/operators group → High |
 
+## Attack Simulated
+
+On `LAB-DC1`, a new user account was created and immediately added to **Domain Admins** — a classic post-compromise privilege escalation move once an attacker has obtained any foothold with account-creation rights:
+
+```powershell
+net user testuser2 Pass@word! /add /domain
+net group "Domain Admins" testuser2 /add /domain
+```
+
 ## Rationale
 
 Adding an account to a privileged group is one of the clearest, highest-confidence indicators of privilege escalation or persistence in an Active Directory environment — whether the account is freshly compromised or an insider abusing legitimate access. This detection covers all three event IDs Windows uses depending on group scope (global, domain local, universal), since relying on only one would miss group-type variations.
@@ -40,6 +49,22 @@ index=* (EventCode=4728 OR EventCode=4732 OR EventCode=4756)
 - **`where match(group_name, "(?i)admin|operators")`** filters to privileged groups only — Windows logs 4728/4732/4756 for *any* security group membership change, including completely benign departmental groups, so without this filter the detection would be far too noisy to be useful.
 - **The `added_account` resolution logic (`eventstats` + `coalesce`)** solves a real Windows logging quirk: the "Member" field in these events is sometimes logged only as a SID with a blank/`-` account name on the *first* occurrence, while a later, related event in the same operation carries the resolved name. Correlating by `member_sid` across events recovers a human-readable name instead of leaving the analyst to manually resolve a raw SID.
 - **Domain/Enterprise/Schema Admins are escalated to Critical** specifically, because compromise of any of these three groups is effectively full forest or domain compromise — a materially different risk tier than, say, being added to a local "Backup Operators" group on one server.
+
+## Alert Configuration
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `added_account` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
+
+Suppressing on `added_account` — rather than on who made the change — ensures that if the same account is touched by more than one qualifying event in the suppression window (plausible here, since creating the account and adding it to Domain Admins are two separate logged operations seconds apart), it is still treated and notified as a single incident.
 
 ## Validation Note
 

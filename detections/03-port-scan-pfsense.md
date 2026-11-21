@@ -8,13 +8,19 @@
 
 ## Attack Simulated
 
-`nmap` was run from Kali against the domain controller across a wide port range:
+Two distinct `nmap` scans were run from Kali against the domain controller, deliberately covering both scan speeds the detection logic is designed to catch:
 
+**Fast scan** (wide port range, no timing restraint):
 ```bash
 nmap -Pn -p 1-1000 192.168.10.10
 ```
 
-Because the destination ports are almost all closed, pfSense's default-deny policy on the `ATTACKER` interface logged each connection attempt as a blocked SYN packet — exactly the signal this detection looks for.
+**Slow/stealth scan** (a narrow, targeted port list with deliberate delay and a single retry, intended to stay under naive per-minute thresholds):
+```bash
+nmap -sS -Pn --scan-delay 5s --max-retries 1 -p 21,22,23,25,53,80,110,135,139,443,445,3389,8080 192.168.10.10
+```
+
+Because the destination ports are almost all closed, pfSense's default-deny policy on the `ATTACKER` interface logged each connection attempt as a blocked SYN packet — exactly the signal this detection looks for. Testing both scan speeds was essential: a detection tuned only to catch a fast, noisy scan would have completely missed the slow variant, which is the more realistic technique a cautious real-world attacker would actually use to evade exactly this kind of volume-based alerting.
 
 ## Detection Logic
 
@@ -50,6 +56,22 @@ index=pfsense "filterlog" ",tcp,"
 ## Validation
 
 Running the `nmap -p 1-1000` scan produced several hundred blocked SYN events in `index=pfsense` within seconds, confirming both that the firewall's attacker-interface logging rule (see [`infrastructure-setup/01`](../infrastructure-setup/01-network-and-pfsense.md)) was capturing the expected volume, and that the regex correctly extracted `src_ip=192.168.20.10` for every event.
+
+## Alert Configuration
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | **Last 15 minutes** (wider than the other nine detections, to give the slow-scan logic in the SPL a long enough lookback to accumulate its total-port count) |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `source_ip` |
+| Suppress triggering for | 10 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
+
+This is the one detection with a different search window (15 minutes instead of the 5-minute window shared by the other nine) and a shorter suppression period (10 minutes instead of 30) — a deliberate tuning choice, not an inconsistency: a slow/stealth scan can legitimately take longer than 5 minutes to accumulate enough distinct ports to cross the detection's threshold, so the search needs the longer lookback to catch it at all, while the shorter suppression window reflects that a scan in progress is worth re-surfacing to the analyst sooner than, say, an ongoing brute-force attempt.
 
 ## Note on Platform Coverage
 

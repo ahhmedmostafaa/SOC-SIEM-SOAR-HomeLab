@@ -8,7 +8,15 @@
 
 ## Attack Simulated
 
-A publicly-reachable Ubuntu VM in Azure (see [`cloud-integration/`](../cloud-integration)) was targeted with SSH login attempts using an invalid username, generating real `auth.log` entries that were forwarded to Splunk over a secure `ngrok` tunnel into the local HEC endpoint.
+From Kali, failed SSH logons were generated against the Azure VM's public IP (`9.205.31.174`) using a wrong password against three different usernames in a loop:
+
+```bash
+for user in alice bob charlie; do
+    sshpass -p "wrongpass123" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 $user@9.205.31.174
+done
+```
+
+Targeting **three different, non-existent usernames** from the same source — rather than repeatedly guessing passwords for one account — was deliberate: it validates the `dc(target_user) >= 3` branch of the detection logic below, which reclassifies this pattern as password spraying / user enumeration rather than classic single-account brute force. The resulting `auth.log` entries were forwarded to Splunk over the secure `ngrok` tunnel into the local HEC endpoint (see [`cloud-integration/`](../cloud-integration)).
 
 ## Detection Logic
 
@@ -37,8 +45,22 @@ index=azure sourcetype=linux_secure ("Failed password" OR "Invalid user")
 - **`dc(target_user) >= 3` reclassifies the attack type**, not just its severity: many failed attempts against *one* username is classic brute force, but many failed attempts spread across *several* usernames from the same source is password spraying / user enumeration — a materially different technique with different likely intent, and the `recommended_actions` text changes accordingly.
 - This is the only detection whose data arrives via **HEC over the internet** rather than a Universal Forwarder on the internal LAN — proving the detection pipeline (not just the raw connectivity) works correctly for a hybrid/cloud-sourced log, including correct field extraction and alerting.
 
+## Alert Configuration
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `source_ip` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
+
 ## Validation
 
-Manually-triggered failed SSH attempts against the Azure VM (`ssh wronguser@<public-ip>`) appeared in `index=azure sourcetype=linux_secure` and correctly populated `target_user` and `src_ip`; the detection correctly classified a single-user, low-volume test as `SSH Brute Force` at Medium severity, and fired a live scheduled alert within one 5-minute cycle — confirming the full chain: Azure VM → systemd forwarder → ngrok tunnel → Splunk HEC → scheduled search → alert.
+The three-username loop against the Azure VM appeared in `index=azure sourcetype=linux_secure` and correctly populated `target_users` (`alice, bob, charlie`) and `src_ip`; the detection correctly classified the attempt as `Password Spraying / User Enumeration` (not plain brute force) given the `unique_users >= 3` condition, and fired a live scheduled alert within one 5-minute cycle — confirming the full chain: Kali → Azure VM (public internet) → systemd forwarder → ngrok tunnel → Splunk HEC → scheduled search → alert → webhook.
 
 See [`cloud-integration/azure-ngrok-hybrid-monitoring.md`](../cloud-integration/azure-ngrok-hybrid-monitoring.md) for how the log forwarding itself was built.

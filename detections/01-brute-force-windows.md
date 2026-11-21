@@ -44,9 +44,20 @@ index=wineventlog EventCode=4625 Logon_Type IN (3,10)
 
 With the GPO from [`infrastructure-setup/03`](../infrastructure-setup/03-sysmon-and-audit-policy.md) applied, all 10 Hydra attempts appeared in Splunk within seconds, each with `Status=0xC000006D` / `Sub_Status=0xC000006A` (bad password), `Source_Network_Address=192.168.20.10`, confirming the attack crossed the pfSense firewall boundary and was logged correctly on the target endpoint.
 
-## Converted to a Live Alert
+## Alert Configuration
 
-- **Schedule:** Cron `*/5 * * * *` (every 5 minutes)
-- **Search window:** Last 15 minutes
-- **Trigger:** Number of results > 0, fired **Once** per run
-- **Verified live:** the alert fired automatically in `Triggered Alerts` within one scheduling cycle of re-running the attack — confirming the full pipeline (attack → log → Splunk → scheduled search → alert) works end-to-end, not just the search query in isolation.
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `Source_Network_Address` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
+
+The throttle/suppression settings above are shared across all ten detections in this lab (same cron cadence, same "Once" trigger, same webhook action) — only the **suppression field** and the **fixed Triggered-Alert severity label** differ per detection, matched to whatever uniquely identifies a repeat occurrence of that specific attack. Here, suppressing on `Source_Network_Address` for 30 minutes means a single attacking host that keeps failing logons doesn't re-fire a fresh Splunk alert (and re-trigger the SOAR webhook) every 5 minutes for the same ongoing incident — one incident, one notification cycle, not a flood of duplicates.
+
+**Verified live:** the alert fired automatically in `Triggered Alerts` within one scheduling cycle of re-running the attack — confirming the full pipeline (attack → log → Splunk → scheduled search → alert → webhook) works end-to-end, not just the search query in isolation.

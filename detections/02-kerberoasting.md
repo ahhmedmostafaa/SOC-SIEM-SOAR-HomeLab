@@ -8,7 +8,13 @@
 
 ## Attack Simulated
 
-Kerberos TGS (service ticket) requests were generated against the service account `svc.backup` (deliberately created with an SPN for this purpose, see [`infrastructure-setup/02`](../infrastructure-setup/02-active-directory.md)), simulating tools like Rubeus or `Invoke-Kerberoast` that request service tickets with a specific set of ticket flags in order to extract them for offline cracking.
+From Kali, Impacket's `GetUserSPNs.py` was used to enumerate and request Kerberos service tickets for every account in the domain with a registered SPN — the standard first step of a real Kerberoasting attack, immediately preceding offline password cracking:
+
+```bash
+GetUserSPNs.py soclab.internal/karim.nabil:'Pass@word!' -dc-ip 192.168.20.10 -request
+```
+
+This mirrors exactly how tools like Rubeus or `Invoke-Kerberoast` operate: authenticate as any valid domain user, then request TGS tickets for every SPN-bearing account (such as `svc.backup`, deliberately created with an SPN for this purpose — see [`infrastructure-setup/02`](../infrastructure-setup/02-active-directory.md)) in order to extract them for offline cracking.
 
 ## Detection Logic
 
@@ -40,6 +46,20 @@ index=* EventCode=4769 Ticket_Options=0x40810010 Service_Name!="krbtgt" Service_
 
 Early testing surfaced background Kerberos traffic from machine accounts (`LAB-DC1$@SOCLAB.INTERNAL`) that initially inflated event counts in broader queries used for incident-timeline reconstruction — this confirmed the importance of the `Service_Name!="*$"` exclusion specifically in the detection logic, even though a raw unfiltered timeline query still needs manual review to separate signal from this kind of normal domain chatter.
 
-## Converted to a Live Alert
+## Alert Configuration
 
-A single scheduled alert runs this entire query, with the `severity` field computed dynamically inside the SPL itself (`case(unique_spns>=10, "Critical", ...)`) rather than relying on Splunk's static per-alert severity dropdown. This was a deliberate design choice: Splunk's built-in "Triggered Alert" severity is normally a fixed value set once when the alert is created, which would display the same severity label every time the alert fires regardless of how many SPNs were actually targeted in that run. Consolidating the threshold logic into the search itself — and carrying the computed `severity` field all the way through to the SOAR payload — keeps the detection as one maintainable alert while still giving the triggered-alert list and the downstream Shuffle playbook an accurate, incident-specific severity every time, instead of maintaining three near-duplicate alert definitions that would all need updating in lockstep if the thresholds ever changed.
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `target_identity` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
+
+A single scheduled alert runs this entire query, with the `severity` field computed dynamically inside the SPL itself (`case(unique_spns>=10, "Critical", ...)`) rather than relying on Splunk's static per-alert severity dropdown. This was a deliberate design choice: Splunk's built-in "Triggered Alert" severity is normally a fixed value set once when the alert is created, which would display the same severity label every time the alert fires regardless of how many SPNs were actually targeted in that run. Consolidating the threshold logic into the search itself — and carrying the computed `severity` field all the way through to the SOAR payload — keeps the detection as one maintainable alert while still giving the downstream Shuffle playbook an accurate, incident-specific severity every time, instead of maintaining three near-duplicate alert definitions that would all need updating in lockstep if the thresholds ever changed.
+
+Suppressing on `target_identity` (the account being Kerberoasted, not the source) means repeated TGS requests against the same account within a 30-minute window are treated as one ongoing incident rather than re-notifying every 5 minutes.

@@ -6,6 +6,16 @@
 | **Data Source** | Sysmon, Event ID 10 (ProcessAccess) |
 | **Severity Logic** | Always High |
 
+## Attack Simulated
+
+On `LAB-DC1`, the classic "living off the land" LSASS-dumping technique was used — invoking the legitimate Windows DLL `comsvcs.dll` through `rundll32.exe` to write a full memory dump of the `lsass.exe` process to disk, entirely without introducing any external tool like Mimikatz:
+
+```powershell
+rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump (Get-Process lsass).id C:\Windows\Temp\lsass.dmp full
+```
+
+This technique is specifically significant because it uses only a built-in, digitally-signed Windows DLL — meaning naive detections that flag based on known malicious tool names or hashes would miss it entirely. The detection here instead keys on the *access rights requested against LSASS*, which is why this exact command was chosen to validate it: it genuinely tests the behavioral logic, not a signature match.
+
 ## Rationale
 
 `lsass.exe` holds credential material in memory for every logged-on user on a Windows system. Tools like Mimikatz extract plaintext passwords and hashes by opening a handle to this process with specific memory-read access rights — this detection watches for exactly that handle request, rather than trying to fingerprint any particular tool by name or hash (which is trivially evaded by recompiling or renaming the tool).
@@ -37,6 +47,20 @@ index=sysmon EventID=10
 - **`GrantedAccess` filtering to a specific set of hex access masks** (`0x1fffff`, `0x1010`, `0x1410`, `0x143a`, `0x1438`) is the core of this detection. These correspond to Windows access rights combinations that include `PROCESS_VM_READ` and similar memory-reading permissions — the rights actually needed to dump credentials — as opposed to the far more common, benign access rights (like `PROCESS_QUERY_LIMITED_INFORMATION` alone) that many legitimate monitoring tools request against every process on the system, including LSASS.
 - **The `SourceImage` exclusion list is deliberately specific to this lab's environment** — it includes Windows Defender (`MsMpEng.exe`), core OS processes, and **VMware Tools processes** (`vmtoolsd.exe`, `vmacthlp.exe`) specifically, because VMware's guest integration tools legitimately query LSASS-adjacent handles on a virtualized endpoint and would otherwise generate constant false positives in this specific lab setup.
 - **No frequency threshold — a single qualifying access event fires the alert.** Unlike brute force or port scanning, there is no "acceptable" number of times an unrecognized process should open a high-privilege handle to LSASS; one occurrence is already actionable.
+
+## Alert Configuration
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `Computer` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
 
 ## Validation Note
 

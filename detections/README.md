@@ -14,6 +14,34 @@ This is a deliberate design choice, not a coincidence. Splunk's alert action sen
 
 `recommended_actions` is also pre-formatted as a semicolon-delimited string (`;;` separator) specifically so the email/Telegram notification workflow can split it into a readable numbered checklist for the analyst — the detection does the enrichment work, the automation just renders it.
 
+## Shared Alert Configuration Pattern
+
+Beyond the field schema, every alert in this folder is configured identically at the Splunk alert-action level, with only two settings varying per detection:
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) — except Port Scan, which uses a 15-minute search window to give slow/stealth scans enough lookback to cross threshold |
+| Trigger condition | Number of results > 0, fired **Once** per run (not per result) |
+| Throttle | Enabled on all ten |
+| Trigger Actions | Add to Triggered Alerts + **Webhook** → Shuffle `SOC-Master-Playbook` |
+
+**What varies per detection: the suppression field.** Each alert suppresses repeat notifications for 30 minutes (10 minutes for Port Scan) based on whichever field uniquely identifies "the same ongoing incident" for that specific attack type — otherwise every alert would re-fire and re-trigger the SOAR webhook every 5 minutes for as long as the underlying activity continues, flooding the analyst and the automation layer with duplicate incidents instead of one.
+
+| Detection | Suppress on field |
+|---|---|
+| Brute Force (4625) | `Source_Network_Address` |
+| Kerberoasting (4769) | `target_identity` (the account being targeted) |
+| Port Scan (pfSense) | `source_ip` |
+| RDP Logon (4624) | `source_ip` |
+| SSH Brute Force (Linux) | `source_ip` |
+| Privileged Group Change | `added_account` |
+| Log Clearing | `host` |
+| Registry Persistence | `Computer` |
+| Credential Dumping — LSASS | `Computer` |
+| Suspicious Scheduled Task | `host` |
+
+This distinction matters: suppressing a brute-force alert by *source IP* makes sense because the attacking host is the constant across repeat attempts, while suppressing a Kerberoasting alert by *target identity* makes sense because the account being roasted is the constant, even if the technique is used again later from a different source.
+
 ## Detection Index
 
 | # | Detection | MITRE Technique | Data Source | Severity Logic |

@@ -6,6 +6,16 @@
 | **Data Source** | Sysmon, Event ID 13 (Registry value set) |
 | **Severity Logic** | Suspicious interpreter (PowerShell/cmd/wscript/mshta/rundll32) in path or value → High, else Medium |
 
+## Attack Simulated
+
+On `LAB-WS10`, a Run key was added to the current user's registry hive, configured to silently launch a hidden PowerShell command on every logon:
+
+```powershell
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "UpdateCheck" /t REG_SZ /d "powershell.exe -WindowStyle Hidden -Command whoami" /f
+```
+
+The value name (`UpdateCheck`) and benign-sounding command (`whoami`) were chosen deliberately to mimic how real persistence payloads are often disguised as routine update-checking entries — testing whether the detection's logic catches the technique based on structure (a hidden PowerShell invocation in a Run key) rather than requiring an obviously malicious-looking command.
+
 ## Rationale
 
 Modifying a Run/RunOnce registry key is one of the oldest and still most common Windows persistence techniques — the malicious entry executes automatically at every logon or boot. The challenge with this detection isn't finding registry writes; it's filtering out the enormous volume of legitimate software (Windows Update, browser auto-launch entries, OneDrive) that also writes to these same keys constantly.
@@ -42,6 +52,20 @@ index=sysmon EventID=13
 - **The `TargetObject` match covers four distinct persistence registry locations**, not just the obvious `Run` key — including `Winlogon\Shell` and `Winlogon\Userinit` (which hijack the login shell itself) and the Group Policy-managed Explorer Run key, all of which are functionally equivalent persistence vectors with different registry paths.
 - **A two-stage noise filter:** first a hard exclude-list for known-legitimate installer/update processes (`msiexec.exe`, `OneDriveSetup.exe`, `TrustedInstaller.exe`) and the specific, extremely common Edge auto-launch entry; then a *positive* signal check (`suspicious_path`) requiring the registry value itself to reference a user-writable directory (`Users`, `Temp`, `AppData`) or a scripting interpreter before the event is even considered. This "exclude the known-good, then require a positive bad signal" pattern catches more real persistence attempts than either filter alone.
 - **Severity escalates specifically when a scripting interpreter is involved** (PowerShell, cmd, wscript, mshta, rundll32) — a Run key pointing directly at a compiled executable is lower-confidence maliciousness than one invoking a script interpreter, which is a much stronger LOLBins-style persistence pattern.
+
+## Alert Configuration
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `Computer` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
 
 ## Relationship to Threat Hunting
 

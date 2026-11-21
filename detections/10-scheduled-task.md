@@ -6,6 +6,16 @@
 | **Data Source** | Windows Security Log, Event ID 4698 |
 | **Severity Logic** | Suspicious interpreter in the task command → High, else Medium |
 
+## Attack Simulated
+
+On `LAB-WS10`, a scheduled task was created to run as `SYSTEM` — the highest local privilege level — launching a hidden PowerShell command at a fixed future time:
+
+```powershell
+schtasks /create /tn "UpdateCheckTask" /tr "powershell.exe -WindowStyle Hidden -Command Write-Host Test" /sc once /st 23:59 /ru SYSTEM /f
+```
+
+Running the task as `SYSTEM` rather than the current user mirrors a real privilege-escalation-via-persistence pattern: an attacker with local administrative rights creating a SYSTEM-level task to ensure their payload survives logoff and runs with maximum privilege, not merely to persist across the current user's sessions.
+
 ## Rationale
 
 Scheduled tasks are a common, low-effort persistence mechanism: create a task that re-executes a payload at logon, at an interval, or on next boot, and the attacker no longer needs an active session to maintain access. The detection challenge is almost entirely about noise — Windows itself and nearly every installed application create scheduled tasks constantly for completely legitimate reasons.
@@ -37,6 +47,20 @@ index=* EventCode=4698
 - **Machine account exclusion (`\$`)** removes tasks created by the SYSTEM/machine context as part of normal OS operation, as opposed to a human (or attacker-controlled) account explicitly creating one.
 - **Named-application exclusions** (`onedrive`, `teams.exe`, `googleupdate`, `adobe`, `dropbox`) target the specific, high-volume legitimate software update tasks observed during lab testing that would otherwise appear repeatedly in the triggered-alerts list and dilute attention from genuinely new tasks.
 - **Severity escalation on interpreter presence** mirrors the same logic used in the Registry Persistence detection — a scheduled task that directly launches `powershell.exe`, `cmd.exe`, `wscript`, `mshta`, or `rundll32` is a stronger persistence/execution signal than one launching a named, compiled application.
+
+## Alert Configuration
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `host` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
 
 ## Validation
 

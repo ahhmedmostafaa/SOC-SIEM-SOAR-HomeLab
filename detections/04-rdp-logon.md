@@ -6,6 +6,16 @@
 | **Data Source** | Windows Security Log, Event ID 4624 (Logon Type 10) |
 | **Severity Logic** | ≥3 distinct source IPs or ≥10 logons → Critical; ≥2 sources or ≥5 logons → High; else Medium |
 
+## Attack Simulated
+
+From Kali, a full RDP session was established against the domain controller using the built-in `Administrator` account:
+
+```bash
+xfreerdp3 /v:192.168.10.10 /u:Administrator /p:'Pass@word!' /cert:ignore /log-level:INFO
+```
+
+Unlike the brute-force scenarios elsewhere in this lab, this is a **successful** authenticated logon — deliberately chosen to validate that this detection fires on legitimate-looking access from an unexpected network (the isolated attacker segment), not just on failures.
+
 ## Rationale
 
 Unlike the other detections, this one does not look for failure — it looks for **successful** RDP logons (Logon Type 10 specifically, which Windows reserves for RemoteInteractive sessions) and flags them as worth reviewing, not necessarily malicious. In a lateral-movement scenario, the interesting signal isn't that an attacker tried to log in — it's that they *succeeded*, especially from an unexpected or multiple source IPs.
@@ -36,6 +46,20 @@ index=* EventCode=4624 Logon_Type=10
 - **Two independent severity triggers (`unique_source_ips` OR `rdp_logons`)** — either a single account logging in from several different locations in a short window, *or* an unusually high volume of logons from one place, is treated as suspicious on its own; they don't both need to be true.
 - **`recommended_actions` branches based on source-IP diversity**, giving a materially different (and more urgent) checklist when the same account appears to be logging in from multiple locations — a stronger indicator of credential sharing or compromise than a single consistent source.
 
+## Alert Configuration
+
+| Setting | Value |
+|---|---|
+| Schedule | Cron `*/5 * * * *` (every 5 minutes) |
+| Search window | Last 5 minutes |
+| Expires | 24 hours |
+| Trigger condition | Number of results > 0 |
+| Trigger | **Once** per run |
+| Throttle | ✅ Enabled |
+| **Suppress results containing field value** | `source_ip` |
+| Suppress triggering for | 30 minutes |
+| Trigger Actions | Add to Triggered Alerts (**Severity: High**) + **Webhook** → Shuffle `SOC-Master-Playbook` |
+
 ## Validation
 
-Legitimate domain-join and administrative RDP sessions used throughout lab setup (e.g., connecting to `LAB-WS10` while configuring the Universal Forwarder) were confirmed to appear correctly in this detection at Medium severity with a single source IP — validating that the detection distinguishes routine single-source access from the higher-severity multi-source pattern, rather than treating every RDP session identically.
+Legitimate domain-join and administrative RDP sessions used throughout lab setup (e.g., connecting to `LAB-WS10` while configuring the Universal Forwarder) were confirmed to appear correctly in this detection at Medium severity with a single source IP — validating that the detection distinguishes routine single-source access from the higher-severity multi-source pattern, rather than treating every RDP session identically. The `xfreerdp3` session from Kali's isolated attacker subnet, by contrast, correctly fired the alert given the unexpected source network, even though the credentials used were valid.

@@ -1,0 +1,43 @@
+# Detection 10 — Suspicious Scheduled Task Created
+
+| | |
+|---|---|
+| **MITRE ATT&CK** | T1053.005 — Scheduled Task/Job |
+| **Data Source** | Windows Security Log, Event ID 4698 |
+| **Severity Logic** | Suspicious interpreter in the task command → High, else Medium |
+
+## Rationale
+
+Scheduled tasks are a common, low-effort persistence mechanism: create a task that re-executes a payload at logon, at an interval, or on next boot, and the attacker no longer needs an active session to maintain access. The detection challenge is almost entirely about noise — Windows itself and nearly every installed application create scheduled tasks constantly for completely legitimate reasons.
+
+## Detection Logic
+
+```spl
+index=* EventCode=4698
+| rex field=_raw "Task Name:\s+\\\\(?<task_name>\S+)"
+| rex field=_raw "<Command>(?<task_command>.*?)</Command>"
+| rex field=_raw "<Arguments>(?<task_arguments>.*?)</Arguments>"
+| rex field=_raw "Account Name:\s+(?<Account_Name>\S+)"
+| where NOT match(task_name, "^Microsoft\\\\Windows\\\\")
+| where NOT match(Account_Name, "\$")
+| where NOT match(task_command, "(?i)^C:\\\\Windows\\\\Explorer\.EXE$")
+| where NOT match(task_command, "(?i)onedrive|teams\.exe|googleupdate|adobe|dropbox")
+| eval mitre_technique="T1053.005 - Scheduled Task/Job"
+| eval alert_name="Suspicious Scheduled Task Created (4698)"
+| eval severity=case(match(task_command, "(?i)powershell|cmd\.exe|wscript|mshta|rundll32"), "High", true(), "Medium")
+| convert ctime(_time) as event_time
+| eval recommended_actions="A new scheduled task (" . task_name . ") was created on " . ComputerName . " by " . Account_Name . ".;;Review the task command (" . task_command . " " . task_arguments . ") for malicious intent.;;Verify with " . Account_Name . " whether they created this task intentionally.;;If unauthorized, delete the scheduled task and investigate " . ComputerName . " for further persistence mechanisms.;;Check for similar scheduled tasks created around the same time on other hosts."
+| eval alert_type="scheduled_task", source_ip="N/A (host-level event)", target_identity=Account_Name, host=ComputerName
+| table alert_name, alert_type, mitre_technique, severity, host, target_identity, source_ip, task_name, task_command, task_arguments, event_time, recommended_actions
+```
+
+### Why it's built this way
+
+- **`NOT match(task_name, "^Microsoft\\Windows\\")`** removes the single largest source of noise: Windows itself creates dozens of built-in scheduled tasks under this namespace (diagnostics, telemetry, maintenance) that have nothing to do with user or attacker activity.
+- **Machine account exclusion (`\$`)** removes tasks created by the SYSTEM/machine context as part of normal OS operation, as opposed to a human (or attacker-controlled) account explicitly creating one.
+- **Named-application exclusions** (`onedrive`, `teams.exe`, `googleupdate`, `adobe`, `dropbox`) target the specific, high-volume legitimate software update tasks observed during lab testing that would otherwise appear repeatedly in the triggered-alerts list and dilute attention from genuinely new tasks.
+- **Severity escalation on interpreter presence** mirrors the same logic used in the Registry Persistence detection — a scheduled task that directly launches `powershell.exe`, `cmd.exe`, `wscript`, `mshta`, or `rundll32` is a stronger persistence/execution signal than one launching a named, compiled application.
+
+## Validation
+
+This was the single most frequently triggered detection during lab testing (appearing repeatedly in `Triggered Alerts` across multiple days), which is expected and appropriate — scheduled task creation is both a common legitimate activity and a common attacker technique, and the exclusion list above was iteratively refined based on exactly which *legitimate* tasks were initially, incorrectly, flagged.

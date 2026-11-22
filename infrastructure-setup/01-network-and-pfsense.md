@@ -60,7 +60,18 @@ index=pfsense | head 10
 
 Raw `filterlog` events showed source/destination IPs, ports, protocol, and pass/block action — exactly the fields later used to build the **Port Scan Detection (T1046)** detection.
 
+## Friendly Hostname Resolution via Automatic Lookup
+
+pfSense's `filterlog` format has no hostname field — only the firewall's own IP (`192.168.10.1`) — which meant every pfSense event in Splunk displayed a raw IP in the `host` field instead of a readable name, unlike every Windows event which shows an actual hostname like `LAB-DC1`.
+
+Rather than appending a manual `| lookup` command to every pfSense search (easy to forget, and inconsistent across dashboards and detections), a **Splunk Automatic Lookup** was configured globally:
+
+- **Lookup table:** `host_lookup.csv` (`ip,hostname` → `192.168.10.1,pfSense-FW`)
+- **Automatic lookup definition:** `host::192.168.10.1 : LOOKUP-pfsense_host_lookup`, applied whenever `host` matches, outputting a new `hostname` field
+- **Scope:** Global, so it applies transparently to *every* search, report, dashboard panel, and detection across the entire Splunk instance — including the [Port Scan Detection](../detections/03-port-scan-pfsense.md) and the SOC Detection Overview dashboard — without any of them needing to reference the lookup explicitly.
+
+This is a small but deliberate platform-level decision: solving the "ugly IP in the UI" problem once, centrally, rather than patching around it in ten different SPL queries.
+
 ## Lessons Learned
 
 - An early install of pfSense (via an older RC installer build) repeatedly crashed with a `Segmentation fault` during the final package install step, regardless of memory allocated. Switching to the current Netgate installer release resolved it — a reminder to always validate the installer version before assuming a hardware/resource issue.
-- pfSense's `filterlog` format has no hostname field — only the firewall's own IP — which required either accepting `host=192.168.10.1` in Splunk or adding a lookup to map it to a friendly name (`pfSense-FW`) for cleaner dashboards.

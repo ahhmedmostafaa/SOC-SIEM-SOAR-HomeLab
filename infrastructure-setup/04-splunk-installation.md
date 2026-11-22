@@ -88,10 +88,27 @@ Invoke-RestMethod -Uri "https://192.168.10.20:8088/services/collector/event" -Me
 
 ## Validation Checklist
 
-- [x] `index=* | stats count by host, index` shows events from `LAB-DC1`, `LAB-WS10`, `LAB-WS11`, and pfSense.
+- [x] `index=* | stats count by host, index` shows events from `LAB-DC1`, `LAB-WS10`, `LAB-WS11`, pfSense, and the Azure VM (see [`cloud-integration/`](../cloud-integration)).
 - [x] `index=sysmon EventCode=1` returns populated `Image`, `CommandLine`, and `ParentImage` fields — confirming the Sysmon add-on parses the XML events correctly (not just raw, unparsed text).
 - [x] `index=wineventlog EventCode=4688` returns a full `Process_Command_Line`, confirming the audit-policy command-line logging from the previous stage is actually reaching Splunk.
 - [x] HEC accepts and indexes a manually-sent test event.
+
+### Ingestion at Scale
+
+As of the latest check, `index=* | stats count by host, index` reports **537,638 total events** across every source feeding the lab:
+
+| Host | Index | Event Count |
+|---|---|---|
+| LAB-DC1 | wineventlog | 194,070 |
+| LAB-DC1 | sysmon | 98,083 |
+| LAB-WS10 | wineventlog | 124,439 |
+| LAB-WS10 | sysmon | 55,554 |
+| LAB-WS11 | wineventlog | 37,532 |
+| LAB-WS11 | sysmon | 11,977 |
+| pfSense (192.168.10.1) | pfsense | 15,772 |
+| soc-cloud-vm (Azure) | azure | 208 |
+
+This is cited deliberately: it demonstrates the pipeline isn't a one-off proof-of-concept that ingested a handful of test events, but a continuously-running SIEM that has been generating, forwarding, and indexing real telemetry across every host in the lab over an extended period.
 
 ## Lessons Learned
 

@@ -35,6 +35,7 @@ Forwarding a public ngrok URL to the **HTTPS** scheme (not plain HTTP) was not o
 This produces a public URL (e.g. `https://<random-subdomain>.ngrok-free.dev`) that proxies directly to the local Splunk HEC endpoint.
 
 ![ngrok tunnel forwarding to Splunk HEC over HTTPS](./screenshots/ngrok-tunnel-https.png)
+
 *The live tunnel session — note `Forwarding` targets `https://192.168.10.20:8088` (not plain `http`), and the `HTTP Requests` log shows a stream of successful `200 OK` POSTs to `/services/collector/event` as the Azure VM's forwarder delivers events in real time.*
 
 Validated end-to-end with a manual request from an entirely separate machine on a different network before trusting it with real VM traffic:

@@ -3,6 +3,7 @@
 The central entry point for every alert this lab's Splunk instance generates.
 
 ![SOC Master Playbook workflow graph](./screenshots/soc-master-playbook.png)
+
 *The router (center) fans out from a single Splunk webhook trigger into ten enrichment branches, all converging back to shared Telegram and email notification steps.*
 
 ## Trigger
@@ -43,7 +44,14 @@ This convergence design means adding a notification channel (or changing the rep
 
 ## Sample Output
 
+Every alert that passes through the playbook produces an email in the SOC inbox, one per alert type:
+
+![SOC inbox with the incident emails](./screenshots/email-inbox-overview.png)
+
+Each detection's own email is shown in its write-up under [`detections/`](../detections). One of them, opened in full:
+
 ![Sample email incident report](./screenshots/email-report-sample.png)
+
 *An auto-generated incident report for a Suspicious Scheduled Task alert — note the structured fields (Alert Name, Severity, MITRE mapping, Host, Target Identity) and the numbered Recommended Actions, rendered directly from the detection's `recommended_actions` string.*
 
 ## Design Rationale: Router vs. Ten Independent Playbooks

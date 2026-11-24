@@ -74,7 +74,9 @@ Consistent with the "no DHCP on internal segments" decision in [`01-network-and-
 | LAB-WS11 | 192.168.10.31 |
 
 ![LAB-DC1 hostname and IP configuration](./screenshots/lab-dc1-ip.png)
+
 ![LAB-WS10 hostname and IP configuration](./screenshots/lab-ws10-ip.png)
+
 ![LAB-WS11 hostname and IP configuration](./screenshots/lab-ws11-ip.png)
 
 ## DNS Configuration
@@ -91,6 +93,7 @@ All domain members (and the Splunk server, and Kali) were standardized to **UTC*
 ## Validation
 
 ![Active Directory and DNS validation](./screenshots/active-directory-validation.png)
+
 *`Get-ADComputer` confirms all three machines sit in their intended OUs; `nslookup` confirms both internal domain resolution and externally-forwarded DNS resolution work from a domain member.*
 
 - `Get-ADComputer -Filter * | Select Name, DistinguishedName` confirms all three machines sit in their intended OUs.

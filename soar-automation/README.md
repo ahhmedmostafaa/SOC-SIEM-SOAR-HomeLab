@@ -11,6 +11,7 @@ Shuffle offers a hosted cloud version (`shuffler.io`) that requires no setup. A 
 There are exactly **ten detections** in this lab (see [`detections/`](../detections)) and **ten corresponding enrichment branches** in the automation layer — but this is implemented as **one master playbook with a router**, not ten separate, disconnected workflows. This mirrors how SOAR is actually used in a mature SOC: a single ingestion point receives alerts from the SIEM regardless of type, and routes each one to the correct handling logic based on its content — rather than requiring the SIEM to know about and call ten different webhook URLs, one per alert type. Adding an eleventh detection later means adding one branch to the router, not standing up a parallel, disconnected automation pipeline.
 
 ![All Shuffle workflows overview](./screenshots/all-workflows-overview.png)
+
 *All five workflows as they appear in the Shuffle dashboard, each with its own run history.*
 
 ## Workflow Index
@@ -22,12 +23,6 @@ There are exactly **ten detections** in this lab (see [`detections/`](../detecti
 | [`Enrich-Identity`](./03-enrich-identity.md) | Reusable identity/role-context sub-workflow for alerts centered on an account rather than an IP |
 | [`Block-IP-pfSense`](./04-block-ip-pfsense.md) | Live remediation — adds a malicious IP to a pfSense firewall alias via API |
 | [`Check-Telegram-Approvals`](./05-check-telegram-approvals.md) | Polls a Telegram bot for an analyst's approve/deny decision and executes (or withholds) the block accordingly |
-
-## Notification Output
-
-Every alert that passes through the Master Playbook ends as an email in the SOC inbox (and a Telegram message). Each message carries the full field set and the alert-specific recommended actions:
-
-![SOC inbox with incident emails](./screenshots/emails/email-inbox-overview.png)
 
 ## Deployment Notes: Running Shuffle on a Resource-Constrained Host
 

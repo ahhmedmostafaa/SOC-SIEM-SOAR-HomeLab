@@ -1,6 +1,7 @@
 # Block-IP-pfSense
 
 ![Block-IP-pfSense workflow graph](./screenshots/block-ip-pfsense.png)
+
 *Get current list → Merge ip list → Update alias → Apply changes → Block result.*
 
 The only workflow in this lab that performs a **real, live remediation action** against infrastructure — adding a malicious IP address to a pfSense firewall alias, which an existing firewall rule already references to block traffic. This is not a simulated or logged-only action; the alias is actually updated via pfSense's API, and the block takes effect immediately.

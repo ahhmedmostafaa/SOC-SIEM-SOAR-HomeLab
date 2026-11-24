@@ -57,6 +57,16 @@ This distinction matters: suppressing a brute-force alert by *source IP* makes s
 | 9 | [Credential Dumping – LSASS Access](./09-credential-dumping-lsass.md) | T1003.001 | Sysmon (Event ID 10) | Always High |
 | 10 | [Suspicious Scheduled Task Created](./10-scheduled-task.md) | T1053.005 | Windows Security (4698) | Suspicious interpreter in command → High |
 
+## Alerts in Splunk
+
+All ten detections are saved as scheduled alerts in the Search & Reporting app:
+
+![Saved Splunk alerts](./screenshots/alerts-overview.png)
+
+Each one fired at least once during testing (the Port Scan alert fired twice — one fast and one slow/stealth scan):
+
+![Triggered alerts in Splunk](./screenshots/triggered-alerts.png)
+
 ## Why These Ten
 
 The selection wasn't arbitrary — it was built to cover the actual stages of an intrusion, not just repeat the same technique ten times:

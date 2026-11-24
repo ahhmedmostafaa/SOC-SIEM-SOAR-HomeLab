@@ -71,7 +71,7 @@ flowchart TB
 | Folder | Contents |
 |---|---|
 | [`infrastructure-setup/`](./infrastructure-setup) | Building the network, pfSense, Active Directory, Sysmon, audit policies, and Splunk from scratch |
-| [`detections/`](./detections) | 11 custom SPL detections, each mapped to a MITRE ATT&CK technique, each validated against a real attack |
+| [`detections/`](./detections) | 10 custom SPL detections, each mapped to a MITRE ATT&CK technique, each validated against a real attack |
 | [`threat-hunting/`](./threat-hunting) | Manual hunts for PowerShell obfuscation, LOLBins, off-hours logons, and lateral movement indicators |
 | [`cloud-integration/`](./cloud-integration) | Extending the SIEM to monitor a public-facing Azure VM over a secure tunnel (hybrid monitoring) |
 | [`soar-automation/`](./soar-automation) | Self-hosted Shuffle SOAR platform (Docker) — a master playbook that enriches, notifies via Telegram/Email, and blocks IPs on pfSense pending human approval |
@@ -134,7 +134,7 @@ To demonstrate monitoring beyond the local network, the lab extends into Microso
 - The Azure VM forwards its `auth.log` to Splunk in near real time via a lightweight `systemd` service.
 - A dedicated detection (SSH Brute Force – Linux) distinguishes classic brute force from password-spraying based on the diversity of targeted usernames.
 
-Full write-up: [`cloud-integration/azure-ngrok-hybrid-monitoring.md`](./cloud-integration/azure-ngrok-hybrid-monitoring.md)
+Full write-up: [`cloud-integration/`](./cloud-integration) — [VM deployment](./cloud-integration/01-azure-vm-deployment.md) and [hybrid log forwarding](./cloud-integration/02-hybrid-log-forwarding.md)
 
 ---
 

@@ -12,7 +12,7 @@ Get current list  →  Merge ip list  →  Update alias  →  Apply changes  →
 ```
 
 ### 1. Get current list
-Retrieves the current contents of a dedicated pfSense firewall alias (e.g., `SOAR_Blocklist`) via the pfSense API — the existing set of IPs already blocked by prior automated or manual action.
+Retrieves the current contents of a dedicated pfSense firewall alias (e.g., `SOAR_Blocked_IPs`) via the pfSense API — the existing set of IPs already blocked by prior automated or manual action.
 
 ### 2. Merge ip list
 Appends the new IP (from the triggering alert) to the existing list, rather than overwriting it — ensuring previously-blocked IPs from earlier incidents remain blocked when a new one is added.
@@ -40,3 +40,14 @@ Tested against the live Port Scan detection (see [`detections/03-port-scan-pfsen
 | `✅ IP Blocked Successfully` — the attacking IP is added to the pfSense alias, confirmed with the specific action taken. | `❌ Action Denied` — no change is made to the firewall, confirming the approval gate actually *prevents* the action rather than merely logging a denial after acting anyway. |
 
 Both outcomes were tested against the same alert type on separate occurrences, confirming the branch logic in [`Check-Telegram-Approvals`](./05-check-telegram-approvals.md) correctly diverges based on the analyst's actual choice rather than always defaulting to one path.
+
+### Firewall-Side Verification
+
+The Telegram messages show what the analyst sees; the pfSense UI shows what actually changed on the firewall. The alias `SOAR_Blocked_IPs` was checked in two places — **Firewall → Aliases** (the configured list) and **Diagnostics → Tables** (the contents loaded into the live ruleset) — before and after tapping **Block**.
+
+| | Before Block | After Block |
+|---|---|---|
+| **Firewall → Aliases** | ![Alias empty before block](./screenshots/pfsense-aliases-before-block.png) | ![Alias containing the blocked IP](./screenshots/pfsense-aliases-after-block.png) |
+| **Diagnostics → Tables** | ![Table empty before block](./screenshots/pfsense-table-before-block.png) | ![Table containing the blocked IP](./screenshots/pfsense-table-after-block.png) |
+
+*Before the action the alias is empty and the table reports "No entries exist in this table"; afterwards `192.168.20.10` appears in both, confirming the change reached the active firewall table and not just the saved configuration.*

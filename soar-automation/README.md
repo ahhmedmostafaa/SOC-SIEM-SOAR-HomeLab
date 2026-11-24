@@ -23,6 +23,12 @@ There are exactly **ten detections** in this lab (see [`detections/`](../detecti
 | [`Block-IP-pfSense`](./04-block-ip-pfsense.md) | Live remediation — adds a malicious IP to a pfSense firewall alias via API |
 | [`Check-Telegram-Approvals`](./05-check-telegram-approvals.md) | Polls a Telegram bot for an analyst's approve/deny decision and executes (or withholds) the block accordingly |
 
+## Notification Output
+
+Every alert that passes through the Master Playbook ends as an email in the SOC inbox (and a Telegram message). Each message carries the full field set and the alert-specific recommended actions:
+
+![SOC inbox with incident emails](./screenshots/emails/email-inbox-overview.png)
+
 ## Deployment Notes: Running Shuffle on a Resource-Constrained Host
 
 Shuffle's Docker Compose stack runs five containers (`backend`, `frontend`, `security`, `orborus`, and `opensearch` as the datastore). Deploying it on the same 4 GB VM already running Splunk Enterprise was tested deliberately rather than assumed to be fine or immediately dismissed as impossible:

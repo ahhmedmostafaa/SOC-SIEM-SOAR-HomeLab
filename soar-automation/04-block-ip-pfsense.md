@@ -35,10 +35,20 @@ This workflow is **never called directly** by the Master Playbook's enrichment b
 
 Tested against the live Port Scan detection (see [`detections/03-port-scan-pfsense.md`](../detections/03-port-scan-pfsense.md)):
 
-| Analyst taps **Block** | Analyst taps **Ignore** |
-|---|---|
-| ![Block approved in Telegram](./screenshots/telegram-bot-block-approved.png) | ![Ignore denied in Telegram](./screenshots/telegram-bot-ignore-denied.png) |
-| `✅ IP Blocked Successfully` — the attacking IP is added to the pfSense alias, confirmed with the specific action taken. | `❌ Action Denied` — no change is made to the firewall, confirming the approval gate actually *prevents* the action rather than merely logging a denial after acting anyway. |
+<table>
+  <tr>
+    <th width="50%">Analyst taps <b>Block</b></th>
+    <th width="50%">Analyst taps <b>Ignore</b></th>
+  </tr>
+  <tr>
+    <td align="center"><img src="./screenshots/telegram-bot-block-approved.png" alt="Block approved in Telegram" width="420"></td>
+    <td align="center"><img src="./screenshots/telegram-bot-ignore-denied.png" alt="Ignore denied in Telegram" width="420"></td>
+  </tr>
+  <tr>
+    <td valign="top"><code>✅ IP Blocked Successfully</code> — the attacking IP is added to the pfSense alias, confirmed with the specific action taken.</td>
+    <td valign="top"><code>❌ Action Denied</code> — no change is made to the firewall, confirming the approval gate actually <em>prevents</em> the action rather than merely logging a denial after acting anyway.</td>
+  </tr>
+</table>
 
 Both outcomes were tested against the same alert type on separate occurrences, confirming the branch logic in [`Check-Telegram-Approvals`](./05-check-telegram-approvals.md) correctly diverges based on the analyst's actual choice rather than always defaulting to one path.
 
@@ -46,9 +56,22 @@ Both outcomes were tested against the same alert type on separate occurrences, c
 
 The Telegram messages show what the analyst sees; the pfSense UI shows what actually changed on the firewall. The alias `SOAR_Blocked_IPs` was checked in two places — **Firewall → Aliases** (the configured list) and **Diagnostics → Tables** (the contents loaded into the live ruleset) — before and after tapping **Block**.
 
-| | Before Block | After Block |
-|---|---|---|
-| **Firewall → Aliases** | ![Alias empty before block](./screenshots/pfsense-aliases-before-block.png) | ![Alias containing the blocked IP](./screenshots/pfsense-aliases-after-block.png) |
-| **Diagnostics → Tables** | ![Table empty before block](./screenshots/pfsense-table-before-block.png) | ![Table containing the blocked IP](./screenshots/pfsense-table-after-block.png) |
+<table>
+  <tr>
+    <th width="12%"></th>
+    <th width="44%">Before Block</th>
+    <th width="44%">After Block</th>
+  </tr>
+  <tr>
+    <td><b>Firewall → Aliases</b></td>
+    <td align="center"><img src="./screenshots/pfsense-aliases-before-block.png" alt="Alias empty before block" width="380"></td>
+    <td align="center"><img src="./screenshots/pfsense-aliases-after-block.png" alt="Alias containing the blocked IP" width="380"></td>
+  </tr>
+  <tr>
+    <td><b>Diagnostics → Tables</b></td>
+    <td align="center"><img src="./screenshots/pfsense-table-before-block.png" alt="Table empty before block" width="380"></td>
+    <td align="center"><img src="./screenshots/pfsense-table-after-block.png" alt="Table containing the blocked IP" width="380"></td>
+  </tr>
+</table>
 
 *Before the action the alias is empty and the table reports "No entries exist in this table"; afterwards `192.168.20.10` appears in both, confirming the change reached the active firewall table and not just the saved configuration.*

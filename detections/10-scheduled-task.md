@@ -68,4 +68,6 @@ This was the single most frequently triggered detection during lab testing (appe
 
 ## SOAR Output: Incident Email
 
-The incident email generated for this detection is shown in the Master Playbook write-up: [`soar-automation/01-soc-master-playbook.md`](../soar-automation/01-soc-master-playbook.md#sample-output).
+The incident report emailed by the [Master Playbook](../soar-automation/01-soc-master-playbook.md) when this detection fired during testing:
+
+![Incident email — Scheduled Task](./screenshots/email-scheduled-task.png)

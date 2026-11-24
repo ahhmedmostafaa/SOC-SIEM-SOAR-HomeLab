@@ -44,15 +44,24 @@ This convergence design means adding a notification channel (or changing the rep
 
 ## Sample Output
 
-Every alert that passes through the playbook produces an email in the SOC inbox, one per alert type:
+Every alert that passes through the playbook produces an incident email in the SOC inbox, one per alert type:
 
 ![SOC inbox with the incident emails](./screenshots/email-inbox-overview.png)
 
-Each detection's own email is shown in its write-up under [`detections/`](../detections). One of them, opened in full:
+Each email is rendered directly from the detection's output fields — Alert Name, Severity, MITRE mapping, Host, Target Identity, reputation scores — followed by the numbered Recommended Actions taken from its `recommended_actions` string. The full email for each alert is shown in the corresponding detection write-up:
 
-![Sample email incident report](./screenshots/email-report-sample.png)
-
-*An auto-generated incident report for a Suspicious Scheduled Task alert — note the structured fields (Alert Name, Severity, MITRE mapping, Host, Target Identity) and the numbered Recommended Actions, rendered directly from the detection's `recommended_actions` string.*
+| # | Detection | Incident Email |
+|---|---|---|
+| 01 | Brute Force: Multiple Failed Logons | [View email](../detections/01-brute-force-windows.md#soar-output-incident-email) |
+| 02 | Kerberoasting Detected | [View email](../detections/02-kerberoasting.md#soar-output-incident-email) |
+| 03 | Port Scan Detected (pfSense) | [View email](../detections/03-port-scan-pfsense.md#soar-output-incident-email) |
+| 04 | RDP Logon Detected | [View email](../detections/04-rdp-logon.md#soar-output-incident-email) |
+| 05 | SSH Brute Force Detected (Linux / Azure) | [View email](../detections/05-ssh-brute-force-linux.md#soar-output-incident-email) |
+| 06 | Privileged Group Membership Change | [View email](../detections/06-privileged-group-change.md#soar-output-incident-email) |
+| 07 | Log Clearing Detected | [View email](../detections/07-log-clearing.md#soar-output-incident-email) |
+| 08 | Registry Persistence: Run Key Modified | [View email](../detections/08-registry-persistence.md#soar-output-incident-email) |
+| 09 | Credential Dumping: LSASS Access | [View email](../detections/09-credential-dumping-lsass.md#soar-output-incident-email) |
+| 10 | Suspicious Scheduled Task Created | [View email](../detections/10-scheduled-task.md#soar-output-incident-email) |
 
 ## Design Rationale: Router vs. Ten Independent Playbooks
 

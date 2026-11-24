@@ -52,6 +52,12 @@ On the Splunk side, a UDP input was created on port `5514`, sourcetype `syslog`,
 
 ## Validation
 
+![pfSense console confirming all three interface assignments](./screenshots/pfsense-interface-ips.png)
+*WAN, LAN, and the renamed `ATTACKER` (OPT1) interface, each with their final assigned addresses, as shown on the pfSense console after setup.*
+
+![Kali attacker machine network configuration](./screenshots/kali-attacker-ip.png)
+*`LAB-KALI`'s `eth0` correctly placed on the isolated attacker subnet (`192.168.20.10/24`) — the source address seen in every detection in this lab that was validated against a Kali-originated attack.*
+
 With pfSense, the domain controller, and Splunk running, traffic generated from Kali (`ping`, `nmap`) against the LAN was confirmed to appear in Splunk within ~1 minute:
 
 ```spl
@@ -71,6 +77,17 @@ Rather than appending a manual `| lookup` command to every pfSense search (easy 
 - **Scope:** Global, so it applies transparently to *every* search, report, dashboard panel, and detection across the entire Splunk instance — including the [Port Scan Detection](../detections/03-port-scan-pfsense.md) and the SOC Detection Overview dashboard — without any of them needing to reference the lookup explicitly.
 
 This is a small but deliberate platform-level decision: solving the "ugly IP in the UI" problem once, centrally, rather than patching around it in ten different SPL queries.
+
+![pfSense automatic lookup configuration](./screenshots/pfsense-automatic-lookup.png)
+*The automatic lookup definition in Splunk — applies globally whenever `host` matches `192.168.10.1`.*
+
+**Before the lookup** — raw `filterlog` events show only the firewall's IP as the host:
+
+![Raw pfSense events before hostname resolution](./screenshots/pfsense-raw-events.png)
+
+**After the lookup** — the same events, with a resolved `hostname` field added automatically, no query changes required:
+
+![pfSense events with resolved hostname](./screenshots/pfsense-hostname-resolved.png)
 
 ## Lessons Learned
 

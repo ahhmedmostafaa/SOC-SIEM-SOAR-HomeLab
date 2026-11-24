@@ -10,6 +10,9 @@ Shuffle offers a hosted cloud version (`shuffler.io`) that requires no setup. A 
 
 There are exactly **ten detections** in this lab (see [`detections/`](../detections)) and **ten corresponding enrichment branches** in the automation layer — but this is implemented as **one master playbook with a router**, not ten separate, disconnected workflows. This mirrors how SOAR is actually used in a mature SOC: a single ingestion point receives alerts from the SIEM regardless of type, and routes each one to the correct handling logic based on its content — rather than requiring the SIEM to know about and call ten different webhook URLs, one per alert type. Adding an eleventh detection later means adding one branch to the router, not standing up a parallel, disconnected automation pipeline.
 
+![All Shuffle workflows overview](./screenshots/all-workflows-overview.png)
+*All five workflows as they appear in the Shuffle dashboard, each with its own run history.*
+
 ## Workflow Index
 
 | Workflow | Role |

@@ -36,12 +36,15 @@ This is a materially different kind of result than "zero matches" — it means t
 ```spl
 index=sysmon EventCode=1 earliest=-7d | head 5
 ```
+![Confirming the sysmon index is otherwise healthy](./screenshots/04-lateral-movement-raw-check.png)
+
 Returned normal, well-formed events without error — the corruption is not affecting the entire index.
 
 **Step 2 — scope the damage with `dbinspect`:**
 ```spl
 | dbinspect index=sysmon
 ```
+![dbinspect output isolating the corrupted bucket](./screenshots/04-dbinspect-bucket-analysis.png)
 
 | Bucket | Event Count | Status |
 |---|---|---|

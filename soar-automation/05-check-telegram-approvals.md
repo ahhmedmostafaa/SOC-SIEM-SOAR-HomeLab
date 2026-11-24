@@ -1,5 +1,8 @@
 # Check-Telegram-Approvals
 
+![Check-Telegram-Approvals workflow graph](./screenshots/check-telegram-approvals.png)
+*Polls Telegram on a schedule, extracts the IP from whichever button was tapped, and branches into an approve or deny path.*
+
 The human-in-the-loop control that gates [`Block-IP-pfSense`](./04-block-ip-pfsense.md) behind an explicit analyst decision, implemented via a dedicated Telegram bot (`SOC_Master_Soar_Bot`).
 
 ## Why Telegram, and Why Polling
@@ -35,10 +38,15 @@ After either path, the inline Block/Ignore buttons are removed from the original
 
 ## Observed Behavior
 
+![Telegram alert awaiting analyst decision](./screenshots/telegram-bot-before-select.png)
+*The initial alert as delivered to the analyst — enriched reputation data, a note that the full report was emailed, and two inline action buttons awaiting a decision.*
+
 | Scenario | Telegram Bot Response |
 |---|---|
 | Analyst taps **Block** | `✅ IP Blocked Successfully — IP Address: <ip> — Action: Added to pfSense firewall block list — Status: Rule applied` |
 | Analyst taps **Ignore** | `❌ Action Denied — No block action was taken. Result: denied\|<ip>` |
+
+(See [`Block-IP-pfSense` validation](./04-block-ip-pfsense.md#validation) for both outcomes shown side-by-side.)
 
 ## Why This Design Choice Matters
 

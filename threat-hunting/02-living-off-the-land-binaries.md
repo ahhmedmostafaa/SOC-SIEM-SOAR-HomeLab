@@ -21,6 +21,8 @@ index=wineventlog EventCode=4688
 
 ## Result
 
+![LOLBins hunt query returning zero events](./screenshots/02-lolbins-zero-results.png)
+
 ```
 0 events
 ```

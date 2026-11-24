@@ -2,6 +2,9 @@
 
 The central entry point for every alert this lab's Splunk instance generates.
 
+![SOC Master Playbook workflow graph](./screenshots/soc-master-playbook.png)
+*The router (center) fans out from a single Splunk webhook trigger into ten enrichment branches, all converging back to shared Telegram and email notification steps.*
+
 ## Trigger
 
 A single **Webhook** trigger node receives an HTTP POST from Splunk's "Webhook" alert action (configured identically across all ten detections — see [`detections/README.md`](../detections/README.md#shared-alert-configuration-pattern)) whenever any of the ten scheduled alerts fires.
@@ -37,6 +40,11 @@ After enrichment, every branch feeds into the same two final actions, regardless
 - **Notify SOC (Email)** — a fuller incident report with the complete field set and the alert's pre-formatted `recommended_actions` checklist
 
 This convergence design means adding a notification channel (or changing the report format) happens once, in one place, rather than needing to be duplicated across ten separate branches.
+
+## Sample Output
+
+![Sample email incident report](./screenshots/email-report-sample.png)
+*An auto-generated incident report for a Suspicious Scheduled Task alert — note the structured fields (Alert Name, Severity, MITRE mapping, Host, Target Identity) and the numbered Recommended Actions, rendered directly from the detection's `recommended_actions` string.*
 
 ## Design Rationale: Router vs. Ten Independent Playbooks
 

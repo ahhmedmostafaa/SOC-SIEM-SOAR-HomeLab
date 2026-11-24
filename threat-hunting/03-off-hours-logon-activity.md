@@ -39,6 +39,8 @@ Excluding accounts ending in `$` (the Windows convention for machine/computer ac
 
 ## Result
 
+![Corrected off-hours hunt query after excluding machine accounts](./screenshots/03-off-hours-corrected-query.png)
+
 ```
 0 events
 ```

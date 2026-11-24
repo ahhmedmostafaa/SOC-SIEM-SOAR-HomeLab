@@ -1,5 +1,8 @@
 # Block-IP-pfSense
 
+![Block-IP-pfSense workflow graph](./screenshots/block-ip-pfsense.png)
+*Get current list → Merge ip list → Update alias → Apply changes → Block result.*
+
 The only workflow in this lab that performs a **real, live remediation action** against infrastructure — adding a malicious IP address to a pfSense firewall alias, which an existing firewall rule already references to block traffic. This is not a simulated or logged-only action; the alias is actually updated via pfSense's API, and the block takes effect immediately.
 
 ## Workflow Steps
@@ -30,5 +33,10 @@ This workflow is **never called directly** by the Master Playbook's enrichment b
 ## Validation
 
 Tested against the live Port Scan detection (see [`detections/03-port-scan-pfsense.md`](../detections/03-port-scan-pfsense.md)):
-- Tapping **Block** in Telegram resulted in a confirmed `✅ IP Blocked Successfully` reply, with the attacking IP added to the pfSense alias.
-- Tapping **Ignore** on a separate occurrence correctly resulted in a `❌ Action Denied` reply, with no change made to the firewall — confirming the approval gate actually prevents the action rather than merely logging a denial after acting anyway.
+
+| Analyst taps **Block** | Analyst taps **Ignore** |
+|---|---|
+| ![Block approved in Telegram](./screenshots/telegram-bot-block-approved.png) | ![Ignore denied in Telegram](./screenshots/telegram-bot-ignore-denied.png) |
+| `✅ IP Blocked Successfully` — the attacking IP is added to the pfSense alias, confirmed with the specific action taken. | `❌ Action Denied` — no change is made to the firewall, confirming the approval gate actually *prevents* the action rather than merely logging a denial after acting anyway. |
+
+Both outcomes were tested against the same alert type on separate occurrences, confirming the branch logic in [`Check-Telegram-Approvals`](./05-check-telegram-approvals.md) correctly diverges based on the analyst's actual choice rather than always defaulting to one path.

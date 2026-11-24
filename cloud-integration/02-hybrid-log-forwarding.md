@@ -32,7 +32,12 @@ ngrok http https://192.168.10.20:8088
 
 Forwarding a public ngrok URL to the **HTTPS** scheme (not plain HTTP) was not optional — the first attempt, forwarding to `http://192.168.10.20:8088` instead, failed with `ERR_NGROK_3004 — invalid or incomplete HTTP response`, because Splunk's HEC listener expects TLS and rejected the plaintext connection ngrok was attempting on its behalf. Specifying the `https://` scheme explicitly in the `ngrok http` command resolved it.
 
-This produces a public URL (e.g. `https://<random-subdomain>.ngrok-free.dev`) that proxies directly to the local Splunk HEC endpoint. Validated end-to-end with a manual request from an entirely separate machine on a different network before trusting it with real VM traffic:
+This produces a public URL (e.g. `https://<random-subdomain>.ngrok-free.dev`) that proxies directly to the local Splunk HEC endpoint.
+
+![ngrok tunnel forwarding to Splunk HEC over HTTPS](./screenshots/ngrok-tunnel-https.png)
+*The live tunnel session — note `Forwarding` targets `https://192.168.10.20:8088` (not plain `http`), and the `HTTP Requests` log shows a stream of successful `200 OK` POSTs to `/services/collector/event` as the Azure VM's forwarder delivers events in real time.*
+
+Validated end-to-end with a manual request from an entirely separate machine on a different network before trusting it with real VM traffic:
 
 ```powershell
 Invoke-RestMethod -Uri "https://<ngrok-subdomain>.ngrok-free.dev/services/collector/event" `

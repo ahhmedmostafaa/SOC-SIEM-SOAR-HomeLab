@@ -1,5 +1,8 @@
 # Enrich-IP
 
+![Enrich-IP workflow graph](./screenshots/enrich-ip.png)
+*Check ip type → AbuseIPDB v2 → VirusTotal v3 → Format result.*
+
 A reusable sub-workflow called by any branch of the [`SOC-Master-Playbook`](./01-soc-master-playbook.md) whose alert carries a `source_ip` worth checking — brute force, RDP, port scan, and SSH brute force all invoke this same logic rather than each reimplementing their own IP-reputation lookup.
 
 ## Workflow Steps

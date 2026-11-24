@@ -53,6 +53,12 @@ germanywestcentral, francecentral, italynorth, uaenorth, denmarkeast
 | Public IP | *(dynamic, assigned by Azure)* |
 | Authentication | Password-based (lab convenience; SSH key auth is the production-recommended alternative) |
 
+![Azure VM overview after deployment](./screenshots/azure-vm-overview.png)
+*The deployed VM in the Azure Portal — Denmark East, Standard_B2ats_v2, Azure for Students subscription, with a single public IP attached.*
+
+![Azure VM private network interface](./screenshots/azure-vm-private-ip.png)
+*The VM's private-network side (`172.16.0.4/24`) — distinct from the public IP used for SSH and attack traffic, and from the lab's own internal `192.168.10.0/24` range, confirming these are two genuinely separate networks connected only by the tunnel described in [`02-hybrid-log-forwarding.md`](./02-hybrid-log-forwarding.md).*
+
 ## Network Security Group Hardening
 
 By default, a newly-created Azure VM with SSH enabled accepts connections from **any** source IP (`Source: Any`) on port 22 — acceptable for a five-minute test, not for a VM left running. The NSG rule was tightened immediately after confirming initial connectivity:

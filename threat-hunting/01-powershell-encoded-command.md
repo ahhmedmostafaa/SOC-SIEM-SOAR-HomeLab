@@ -33,6 +33,8 @@ Three flag variants (`-EncodedCommand`, `-enc`, `-e `) are matched because Power
 
 ## Result
 
+![Hunt query result showing the encoded PowerShell command](./screenshots/01-powershell-encoded-result.png)
+
 ```
 2026-11-07 18:04:19  LAB-WS10  LAB-WS10\...  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -EncodedCommand VwByaGtAdAB...
 ```

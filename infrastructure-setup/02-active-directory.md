@@ -63,6 +63,20 @@ soclab.internal
 ### Windows 11 note
 Windows 11 requires a TPM 2.0 device to install. Since VMware Workstation's virtual TPM requires the VM to be encrypted first, the VM was encrypted (`Edit virtual machine settings → Options → Access Control → Encrypt`) before a `Trusted Platform Module` device could be added under Hardware — otherwise setup fails with *"This PC doesn't currently meet Windows 11 system requirements."*
 
+## Static IP Assignment Per Host
+
+Consistent with the "no DHCP on internal segments" decision in [`01-network-and-pfsense.md`](./01-network-and-pfsense.md), every domain member was assigned a fixed address by hand:
+
+| Host | Static IP |
+|---|---|
+| LAB-DC1 | 192.168.10.10 |
+| LAB-WS10 | 192.168.10.30 |
+| LAB-WS11 | 192.168.10.31 |
+
+![LAB-DC1 hostname and IP configuration](./screenshots/lab-dc1-ip.png)
+![LAB-WS10 hostname and IP configuration](./screenshots/lab-ws10-ip.png)
+![LAB-WS11 hostname and IP configuration](./screenshots/lab-ws11-ip.png)
+
 ## DNS Configuration
 
 - `LAB-DC1` runs the domain's DNS server and is authoritative for `soclab.internal`.
@@ -75,6 +89,9 @@ All domain members (and the Splunk server, and Kali) were standardized to **UTC*
 2. A Windows Server Evaluation image did not correctly apply Egypt's DST rule change, causing a visible 1-hour discrepancy against an up-to-date Windows 10 client even though both reported "correct" local time — UTC sidesteps the ambiguity entirely and matches how real SOC teams normalize timestamps across time zones.
 
 ## Validation
+
+![Active Directory and DNS validation](./screenshots/active-directory-validation.png)
+*`Get-ADComputer` confirms all three machines sit in their intended OUs; `nslookup` confirms both internal domain resolution and externally-forwarded DNS resolution work from a domain member.*
 
 - `Get-ADComputer -Filter * | Select Name, DistinguishedName` confirms all three machines sit in their intended OUs.
 - `nslookup soclab.internal` and `nslookup google.com` from a domain member confirm both internal and forwarded DNS resolution work.

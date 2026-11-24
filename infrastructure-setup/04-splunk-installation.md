@@ -24,6 +24,9 @@ sudo -u splunk /opt/splunk/bin/splunk start --accept-license
 sudo /opt/splunk/bin/splunk enable boot-start -user splunk
 ```
 
+![LAB-SPLUNK1 network configuration](./screenshots/splunk-server-ip.png)
+*`LAB-SPLUNK1` holds a static address (192.168.10.20) on the corporate LAN, consistent with every other domain member — the Docker bridge addresses (172.17–19.0.1) also visible here belong to the Shuffle SOAR containers deployed later on this same host (see [`soar-automation/`](../soar-automation)).*
+
 ## Index Structure
 
 Rather than indexing everything into Splunk's default `main` index, dedicated indexes were created per data source — this keeps retention, permissions, and search performance manageable as the lab grows, and mirrors how a real Splunk deployment is structured:
@@ -94,6 +97,9 @@ Invoke-RestMethod -Uri "https://192.168.10.20:8088/services/collector/event" -Me
 - [x] HEC accepts and indexes a manually-sent test event.
 
 ### Ingestion at Scale
+
+![Splunk ingestion volume across all sources](./screenshots/splunk-ingestion-scale.png)
+*`index=* | stats count by host, index` — every host and index in the lab, including the Azure VM and the ngrok tunnel endpoint itself, reporting live.*
 
 As of the latest check, `index=* | stats count by host, index` reports **537,638 total events** across every source feeding the lab:
 

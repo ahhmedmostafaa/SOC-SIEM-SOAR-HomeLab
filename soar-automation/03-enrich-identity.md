@@ -1,5 +1,8 @@
 # Enrich-Identity
 
+![Enrich-Identity workflow graph](./screenshots/enrich-identity.png)
+*A deliberately minimal, single-step sub-workflow — identity context resolution doesn't need the multi-API chain that IP enrichment does.*
+
 A reusable sub-workflow for alert branches centered on an **account** rather than a source IP — Kerberoasting, Privileged Group Membership Change, and Scheduled Task creation are identity-driven events where "who" matters more than "where from."
 
 ## Workflow Step

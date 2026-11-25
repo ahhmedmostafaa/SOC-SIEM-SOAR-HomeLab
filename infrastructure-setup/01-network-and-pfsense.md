@@ -46,7 +46,7 @@ pfSense forwards firewall events to Splunk over UDP:
 
 - **Status → System Logs → Settings → Remote Logging**
 - Remote log server: `192.168.10.20:5514`
-- Content: **Firewall Events** only (to avoid flooding the index with unrelated system noise)
+- Content: **Firewall Events** (the detection source) plus **System Events**, so the firewall emits periodic events even when no traffic matches a logged rule — this keeps the [ingestion-health heartbeat](../dashboards/README.md#asset--log-ingestion-health) honest. Other categories are left off to avoid flooding the index with unrelated noise
 
 On the Splunk side, a UDP input was created on port `5514`, sourcetype `syslog`, indexed into a dedicated `pfsense` index.
 

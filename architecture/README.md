@@ -4,71 +4,96 @@ This lab runs entirely on a single physical workstation (16 GB RAM) using VMware
 
 ## Full Data Flow — From Attack to Automated Response
 
+The end-to-end flow is shown in two stages: how an attack becomes an alert, and how an alert becomes a response.
+
+### 1. Detection pipeline — attack to alert
+
 ```mermaid
-flowchart LR
-    subgraph Attack["Attack Surface"]
-        KALI["🧨 Kali<br/>(internal attacker)"]
-        INET["🌐 Internet<br/>(external attacker path)"]
+%%{init: {"flowchart": {"nodeSpacing": 26, "rankSpacing": 38, "padding": 10}}}%%
+flowchart TB
+    subgraph ATK["Attack Paths"]
+        KALI["🧨 Kali<br/>internal attacker"]
+        INET["🌐 Internet<br/>external attacker"]
     end
 
-    subgraph Targets["Targets"]
+    subgraph TGT["Targets"]
         DC["LAB-DC1"]
         WS["LAB-WS10 / WS11"]
-        AZ["Azure VM<br/>(public)"]
         FW["pfSense"]
+        AZ["Azure VM<br/>public"]
     end
 
-    subgraph Telemetry["Telemetry Layer"]
+    subgraph TEL["Telemetry"]
         SYSMON["Sysmon +<br/>Advanced Audit Policy"]
+        FWLOG["filterlog<br/>syslog"]
         AUTHLOG["auth.log"]
-        FWLOG["filterlog (syslog)"]
     end
 
-    subgraph SIEM["SIEM — Splunk Enterprise"]
-        UF["Universal Forwarders :9997"]
-        HEC["HTTP Event Collector :8088"]
-        IDX[("Indexes:<br/>wineventlog, sysmon,<br/>pfsense, azure")]
-        SPL["10 Detections (SPL)<br/>+ MITRE ATT&CK mapping"]
-        ALERT["Scheduled Alerts<br/>(cron, throttled, suppressed)"]
+    subgraph SIEM["Splunk Enterprise"]
+        direction LR
+        IDX[("Indexes<br/>wineventlog · sysmon<br/>pfsense · azure")]
+        SPL["10 detections (SPL)<br/>MITRE ATT&CK mapped"]
+        ALERT["Scheduled alerts<br/>cron · throttled · suppressed"]
+        IDX --> SPL --> ALERT
     end
 
-    subgraph SOAR["SOAR — Shuffle (Docker)"]
+    DASH["📊 SOC Detection<br/>Overview Dashboard"]
+    SOAR["➡️ SOAR response<br/>(next diagram)"]
+
+    KALI --> DC & WS & FW
+    INET -. ngrok tunnel .-> AZ
+
+    DC --> SYSMON
+    WS --> SYSMON
+    FW --> FWLOG
+    AZ --> AUTHLOG
+
+    SYSMON -- "Forwarders :9997" --> SIEM
+    FWLOG -- "UDP 5514" --> SIEM
+    AUTHLOG -. "ngrok + HEC :8088" .-> SIEM
+
+    SIEM --> DASH
+    SIEM -- "webhook" --> SOAR
+
+    style IDX fill:#2e7d32,color:#fff
+    style AZ fill:#0078d4,color:#fff
+    style SOAR fill:#e65100,color:#fff
+```
+
+### 2. Response pipeline — alert to action
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 30, "rankSpacing": 38, "padding": 10}}}%%
+flowchart TB
+    ALERT["📡 Splunk scheduled alert"]
+
+    subgraph SOAR[" "]
         ROUTER["SOC-Master-Playbook<br/>(router)"]
         ENRICH["Enrich-IP /<br/>Enrich-Identity"]
         APPROVE["Check-Telegram-Approvals<br/>(human-in-the-loop)"]
         BLOCK["Block-IP-pfSense<br/>(live remediation)"]
+        NOOP["❌ No action taken"]
     end
 
-    subgraph Notify["Analyst-Facing Output"]
-        TG["Telegram Bot"]
-        MAIL["Email Report"]
-        DASH["SOC Detection<br/>Overview Dashboard"]
-    end
+    TG["📱 Telegram bot<br/>alert + Block / Ignore"]
+    MAIL["📧 Email incident report"]
 
-    KALI --> DC & WS & FW
-    INET -.ngrok tunnel.-> AZ
+    FW["🔥 pfSense<br/>SOAR_Blocked_IPs alias"]
 
-    DC --> SYSMON
-    WS --> SYSMON
-    AZ --> AUTHLOG
-    FW --> FWLOG
-
-    SYSMON --> UF --> IDX
-    AUTHLOG -. ngrok + HEC .-> HEC --> IDX
-    FWLOG -- UDP 5514 --> IDX
-
-    IDX --> SPL --> ALERT
-    ALERT -- Webhook --> ROUTER
-    ROUTER --> ENRICH --> TG
+    ALERT -- "webhook → Shuffle (Docker)" --> ROUTER
+    ROUTER --> ENRICH
     ROUTER --> MAIL
+    ENRICH --> TG
     ENRICH --> APPROVE
-    APPROVE -- approved --> BLOCK --> FW
-    IDX --> DASH
+    APPROVE -- approved --> BLOCK
+    APPROVE -- ignored --> NOOP
+    BLOCK --> FW
 
-    style IDX fill:#2e7d32,color:#fff
+    style TG fill:#0088cc,color:#fff
+    style MAIL fill:#5f6368,color:#fff
     style ROUTER fill:#e65100,color:#fff
     style APPROVE fill:#0277bd,color:#fff
-    style AZ fill:#0078d4,color:#fff
+    style BLOCK fill:#2e7d32,color:#fff
 ```
 
 ## Layer-by-Layer Design Summary

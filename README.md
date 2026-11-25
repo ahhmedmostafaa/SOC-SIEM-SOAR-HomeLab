@@ -18,42 +18,43 @@ Every alert in this repo fired because an attack was actually run against the la
 ## 🏗️ Architecture Overview
 
 ```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 28, "rankSpacing": 40, "padding": 10}}}%%
 flowchart LR
     INET[("🌐 Internet")]
-    AZURE["☁️ Azure VM (Ubuntu, public)<br/>SSH target → forwards auth.log"]
-    NGROK["🔒 ngrok secure tunnel<br/>HTTPS"]
+    AZURE["☁️ Azure VM<br/>Ubuntu · public<br/>SSH target"]
+    NGROK["🔒 ngrok<br/>HTTPS tunnel"]
 
     subgraph FW["pfSense Firewall"]
         direction TB
         WAN["WAN"]
         LANIF["LAN"]
-        OPT["OPT1 / ATTACKER"]
+        OPT["ATTACKER"]
     end
 
     subgraph ATTACKER["Attacker Network — 192.168.20.0/24"]
-        KALI["🧨 LAB-KALI<br/>Hydra / Nmap"]
+        KALI["🧨 LAB-KALI<br/>Hydra · Nmap"]
     end
 
     subgraph LAN["Corporate LAN — 192.168.10.0/24"]
         direction TB
-        DC["🖥️ LAB-DC1<br/>Active Directory / DNS"]
-        WS10["💻 LAB-WS10<br/>Windows 10"]
-        WS11["💻 LAB-WS11<br/>Windows 11"]
-        SPLUNK["📊 LAB-SPLUNK1<br/>Splunk Enterprise<br/>+ Shuffle SOAR (Docker)"]
+        DC["🖥️ LAB-DC1<br/>AD · DNS<br/>Sysmon + UF"]
+        WS10["💻 LAB-WS10<br/>Windows 10<br/>Sysmon + UF"]
+        WS11["💻 LAB-WS11<br/>Windows 11<br/>Sysmon + UF"]
+        SPLUNK["📊 LAB-SPLUNK1<br/>Splunk Enterprise<br/>+ Shuffle SOAR"]
     end
 
     WAN ~~~ LANIF ~~~ OPT
     INET --- AZURE
     INET --- WAN
-    AZURE -- "auth.log via HEC" --> NGROK
+    AZURE -- "auth.log (HEC)" --> NGROK
     NGROK --> SPLUNK
 
     LANIF --- LAN
     OPT --- KALI
 
-    DC -. forwarder .-> SPLUNK
-    WS10 -. forwarder .-> SPLUNK
-    WS11 -. forwarder .-> SPLUNK
+    DC -.-> SPLUNK
+    WS10 -.-> SPLUNK
+    WS11 -.-> SPLUNK
     LANIF -. syslog .-> SPLUNK
 
     style SPLUNK fill:#2e7d32,color:#fff

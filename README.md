@@ -75,7 +75,7 @@ flowchart TB
 | [`threat-hunting/`](./threat-hunting) | Manual hunts for PowerShell obfuscation, LOLBins, off-hours logons, and lateral movement indicators |
 | [`cloud-integration/`](./cloud-integration) | Extending the SIEM to monitor a public-facing Azure VM over a secure tunnel (hybrid monitoring) |
 | [`soar-automation/`](./soar-automation) | Self-hosted Shuffle SOAR platform (Docker) — a master playbook that enriches, notifies via Telegram/Email, and blocks IPs on pfSense pending human approval |
-| [`dashboards/`](./dashboards) | A SOC Detection Overview dashboard: severity breakdown, alert timeline, and MITRE ATT&CK coverage matrix |
+| [`dashboards/`](./dashboards) | A seven-panel SOC Detection Overview dashboard: alert volume and severity, MITRE ATT&CK coverage, log-ingestion health, and an SPL-linked triage queue |
 | [`architecture/`](./architecture) | Network diagrams and design decisions |
 
 ---
@@ -140,11 +140,16 @@ Full write-up: [`cloud-integration/`](./cloud-integration) — [VM deployment](.
 
 ## 📊 Dashboard
 
-A single-pane **SOC Detection Overview** dashboard shows:
-- Alerts by severity (pie chart)
-- Alert volume over time
-- Alerts fired per detection (bar chart)
+A single-pane **SOC Detection Overview** dashboard answers what an analyst asks at the start of a shift:
+
+![SOC Detection Overview dashboard](./dashboards/screenshots/00-dashboard-overview.png)
+
+- Alerts fired per detection, by severity, and over time
 - A live MITRE ATT&CK coverage table (tactic → technique → detection → platform)
+- **Asset & log ingestion health** — a Silent/Online heartbeat per host, so "no alerts" can be told apart from "no data"
+- A recent-alerts **triage queue** exposing the SPL behind each alert
+
+Full walkthrough: [`dashboards/`](./dashboards).
 
 ---
 

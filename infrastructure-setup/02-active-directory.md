@@ -75,9 +75,15 @@ Consistent with the "no DHCP on internal segments" decision in [`01-network-and-
 
 ![LAB-DC1 hostname and IP configuration](./screenshots/lab-dc1-ip.png)
 
+*`LAB-DC1` — the domain controller, `192.168.10.10`.*
+
 ![LAB-WS10 hostname and IP configuration](./screenshots/lab-ws10-ip.png)
 
+*`LAB-WS10` — Windows 10 endpoint, `192.168.10.30`.*
+
 ![LAB-WS11 hostname and IP configuration](./screenshots/lab-ws11-ip.png)
+
+*`LAB-WS11` — Windows 11 endpoint, `192.168.10.31`.*
 
 ## DNS Configuration
 

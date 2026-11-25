@@ -83,6 +83,10 @@ The incident report emailed by the [Master Playbook](../soar-automation/01-soc-m
 
 ![Incident email — fast scan — severity Critical](./screenshots/email-port-scan-fast.png)
 
+*Fast scan — severity Critical.*
+
 ![Incident email — slow/stealth scan — severity High](./screenshots/email-port-scan-slow.png)
+
+*Slow/stealth scan — severity High.*
 
 *Both emails come from this one detection: severity follows the number of unique ports touched (≥100 → Critical, ≥50 → High), and the recommended actions differ between a fast scan and a slow/stealth scan.*

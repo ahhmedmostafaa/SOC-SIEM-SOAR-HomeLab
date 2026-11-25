@@ -18,42 +18,43 @@ Every alert in this repo fired because an attack was actually run against the la
 ## 🏗️ Architecture Overview
 
 ```mermaid
-flowchart TB
+flowchart LR
     INET[("🌐 Internet")]
-    NGROK["🔒 ngrok Secure Tunnel<br/>HTTPS"]
-    AZURE["☁️ Azure VM Ubuntu, Public<br/>SSH target → forwards auth.log"]
-
-    INET --- AZURE
-    AZURE -- auth.log via HEC --> NGROK
+    AZURE["☁️ Azure VM (Ubuntu, public)<br/>SSH target → forwards auth.log"]
+    NGROK["🔒 ngrok secure tunnel<br/>HTTPS"]
 
     subgraph FW["pfSense Firewall"]
-        direction LR
-        WAN["WAN"] --- LANIF["LAN"] --- OPT["OPT1 / ATTACKER"]
-    end
-
-    NGROK --> SPLUNK
-
-    subgraph LAN["Corporate LAN — 192.168.10.0/24"]
-        DC["🖥️ LAB-DC1<br/>Active Directory / DNS<br/>Domain Controller"]
-        WS10["💻 LAB-WS10<br/>Windows 10<br/>Sysmon + Audit Policy"]
-        WS11["💻 LAB-WS11<br/>Windows 11<br/>Sysmon + Audit Policy"]
-        SPLUNK["📊 LAB-SPLUNK1<br/>Splunk Enterprise<br/>+ Shuffle SOAR (Docker)"]
+        direction TB
+        WAN["WAN"]
+        LANIF["LAN"]
+        OPT["OPT1 / ATTACKER"]
     end
 
     subgraph ATTACKER["Attacker Network — 192.168.20.0/24"]
         KALI["🧨 LAB-KALI<br/>Hydra / Nmap"]
     end
 
-    LANIF --- DC
-    LANIF --- WS10
-    LANIF --- WS11
-    LANIF --- SPLUNK
+    subgraph LAN["Corporate LAN — 192.168.10.0/24"]
+        direction TB
+        DC["🖥️ LAB-DC1<br/>Active Directory / DNS"]
+        WS10["💻 LAB-WS10<br/>Windows 10"]
+        WS11["💻 LAB-WS11<br/>Windows 11"]
+        SPLUNK["📊 LAB-SPLUNK1<br/>Splunk Enterprise<br/>+ Shuffle SOAR (Docker)"]
+    end
+
+    WAN ~~~ LANIF ~~~ OPT
+    INET --- AZURE
+    INET --- WAN
+    AZURE -- "auth.log via HEC" --> NGROK
+    NGROK --> SPLUNK
+
+    LANIF --- LAN
     OPT --- KALI
 
     DC -. forwarder .-> SPLUNK
     WS10 -. forwarder .-> SPLUNK
     WS11 -. forwarder .-> SPLUNK
-    FW -. syslog .-> SPLUNK
+    LANIF -. syslog .-> SPLUNK
 
     style SPLUNK fill:#2e7d32,color:#fff
     style DC fill:#1565c0,color:#fff
@@ -99,7 +100,7 @@ flowchart TB
 | Discovery | T1046 — Network Service Discovery | Port Scan Detected (pfSense) |
 | Credential Access | T1110.001 — Password Guessing | Brute Force – Multiple Failed Logons (Windows) |
 | Credential Access | T1110.001 — Password Guessing | SSH Brute Force Detected (Linux / Azure) |
-| Credential Access | T1558.003 — Kerberoasting | Kerberoasting – Critical / High / Medium (4769) |
+| Credential Access | T1558.003 — Kerberoasting | Kerberoasting Detected (4769) |
 | Credential Access | T1003.001 — LSASS Memory | Credential Dumping – LSASS Access (Sysmon 10) |
 | Persistence | T1053.005 — Scheduled Task | Suspicious Scheduled Task Created (4698) |
 | Persistence | T1547.001 — Registry Run Keys | Registry Persistence – Run Key Modified |
@@ -115,10 +116,10 @@ Full detail, SPL query, and validation steps for each detection are in [`detecti
 
 This isn't a single webhook-to-Slack demo. The automation layer includes:
 
-- **A central router playbook** (`SOC-Master-Playbook`) that receives any Splunk alert and routes it to the correct enrichment sub-workflow based on alert type.
-- **IP enrichment** against VirusTotal and AbuseIPDB, with logic to skip enrichment for private/internal IP ranges.
-- **Human-in-the-loop approval** via a Telegram bot: high-impact actions (blocking an IP) require an analyst to tap "Block" or "Ignore" before anything is applied.
-- **Real remediation** — approved blocks are pushed live to a pfSense firewall alias via API, not just logged.
+- **A central router playbook** ([`SOC-Master-Playbook`](./soar-automation/01-soc-master-playbook.md)) that receives any Splunk alert and routes it to the correct enrichment sub-workflow based on alert type.
+- **[IP enrichment](./soar-automation/02-enrich-ip.md)** against VirusTotal and AbuseIPDB, with logic to skip enrichment for private/internal IP ranges.
+- **[Human-in-the-loop approval](./soar-automation/05-check-telegram-approvals.md)** via a Telegram bot: high-impact actions (blocking an IP) require an analyst to tap "Block" or "Ignore" before anything is applied.
+- **[Real remediation](./soar-automation/04-block-ip-pfsense.md)** — approved blocks are pushed live to a pfSense firewall alias via API, not just logged.
 - **Multi-channel notification** — full incident detail by email, condensed real-time alert + action buttons via Telegram.
 
 See [`soar-automation/`](./soar-automation) for workflow diagrams and design notes.

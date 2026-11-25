@@ -44,7 +44,7 @@ A live table mapping every detection to its Platform (Windows / Linux / Network)
 
 A live heartbeat table showing, for every host expected to be forwarding logs, its current **Status** (`Online` / `Silent`), the log sources it forwards, total event count, and — critically — how long ago it was last seen.
 
-![Asset and log ingestion health, all hosts reporting except soc-cloud-vm](./screenshots/04-asset-health-after-fix.png)
+![Asset and log ingestion health, with the Silent host highlighted](./screenshots/03-asset-and-log-ingestion-health.png)
 
 **How status is decided**
 
@@ -53,21 +53,13 @@ A live heartbeat table showing, for every host expected to be forwarding logs, i
 - The panel is pinned to **all time**, independent of the Global Time Range, so narrowing the dashboard's window can never hide a host that has stopped reporting.
 - Hosts that forward by IP (pfSense) are resolved to a friendly name through the same lookup described in [`infrastructure-setup/01-network-and-pfsense.md`](../infrastructure-setup/01-network-and-pfsense.md), and the HEC / ngrok tunnel's own metadata is excluded so it never shows up as a "device."
 
+In the screenshot, four hosts are `Online` and `soc-cloud-vm` is `Silent`: the Azure VM was powered off for this test run (its last event is from `2026-11-18 22:35:01`) and resumes forwarding normally whenever it is started. The dashboard reports that state rather than omitting the host or implying it is fine.
+
 **Why "Silent" matters as much as any detection.** A detection can only fire if its log source is actually reporting. A forwarder that silently dies — service crash, network change, a powered-off VM — produces *zero alerts*, which looks identical to *zero attacks* unless something independently watches the data pipeline itself. This panel exists to surface that distinction, and it is a deliberate design principle borrowed from production SOC tooling: **detection coverage is only meaningful alongside visibility into whether the coverage itself is currently working.**
-
-### A real catch during testing
-
-The panel earned its place when it flagged `pfSense-FW` as **Silent**: its last event was `2026-11-22 03:30:06`, 3,834 minutes earlier, while the firewall VM was up and remote logging was still configured.
-
-![pfSense-FW shown as Silent, 3,834 minutes since last event](./screenshots/03-asset-health-pfsense-silent.png)
-
-Comparing `_time` against `_indextime` on that last event showed identical timestamps, which ruled out clock skew — Splunk had genuinely stopped receiving data. The remote-logging settings were re-applied (which restarts `syslogd`) and **System Events** were added to the forwarded categories, so the firewall now emits periodic events even when no traffic matches a logged rule. Forwarding resumed and the panel returned to `Online`, as in the first screenshot above.
-
-`soc-cloud-vm` correctly remains **Silent**: its last event is from `2026-11-18 22:35:01`, and the dashboard reports that state rather than omitting the host or implying it is fine.
 
 ## Recent Alerts Triage Queue
 
-![Recent alerts triage queue with the Alert_SPL column highlighted](./screenshots/05-recent-alerts-triage-queue.png)
+![Recent alerts triage queue with the Alert_SPL column highlighted](./screenshots/04-recent-alerts-triage-queue.png)
 
 A paginated working queue of the most recent alerts, each row showing Time, Alert Name, Severity, Events Count, and — notably — the highlighted **Alert_SPL** field: the actual search query that generated that specific alert, displayed inline and clickable.
 

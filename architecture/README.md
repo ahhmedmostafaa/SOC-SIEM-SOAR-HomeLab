@@ -9,7 +9,7 @@ The end-to-end flow is shown in two stages: how an attack becomes an alert, and 
 ### 1. Detection pipeline — attack to alert
 
 ```mermaid
-%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 30, "padding": 8}}}%%
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 30, "padding": 8, "wrappingWidth": 420}}}%%
 flowchart TB
     subgraph ATK["Attack Paths"]
         KALI["🧨 Kali<br/>internal attacker"]
@@ -29,7 +29,7 @@ flowchart TB
         AUTHLOG["auth.log"]
     end
 
-    SIEM[("📚 Splunk Enterprise<br/>Indexes: wineventlog · sysmon · pfsense · azure<br/>10 SPL detections, MITRE ATT&CK mapped<br/>Scheduled alerts: cron · throttled · suppressed")]
+    SIEM["📚 <b>Splunk Enterprise</b><br/>Indexes: wineventlog · sysmon · pfsense · azure<br/>10 SPL detections · MITRE ATT&CK mapped<br/>Scheduled alerts: cron · throttled · suppressed"]
 
     DASH["📊 SOC Detection<br/>Overview Dashboard"]
     SOAR["➡️ SOAR response<br/>(next diagram)"]

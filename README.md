@@ -4,8 +4,7 @@
 
 > A fully self-built Security Operations Center lab simulating a realistic enterprise environment: Active Directory, endpoint telemetry, a SIEM pipeline, custom detections mapped to MITRE ATT&CK, threat hunting, hybrid cloud monitoring, and a working SOAR automation layer with human-in-the-loop approvals.
 
-**Author:** Ahmed Mostafa Hussein
-
+**Author:** Ahmed Mostafa Hussein<br>
 **Status:** Actively maintained | Built end-to-end from scratch on a single workstation
 
 ---

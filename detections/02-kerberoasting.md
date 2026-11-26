@@ -11,7 +11,7 @@
 From Kali, Impacket's `GetUserSPNs.py` was used to enumerate and request Kerberos service tickets for every account in the domain with a registered SPN — the standard first step of a real Kerberoasting attack, immediately preceding offline password cracking:
 
 ```bash
-GetUserSPNs.py soclab.internal/karim.nabil:'Pass@word!' -dc-ip 192.168.20.10 -request
+GetUserSPNs.py soclab.internal/karim.nabil:'Pass@word!' -dc-ip 192.168.10.10 -request
 ```
 
 This mirrors exactly how tools like Rubeus or `Invoke-Kerberoast` operate: authenticate as any valid domain user, then request TGS tickets for every SPN-bearing account (such as `svc.backup`, deliberately created with an SPN for this purpose — see [`infrastructure-setup/02`](../infrastructure-setup/02-active-directory.md)) in order to extract them for offline cracking.

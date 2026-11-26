@@ -2,6 +2,15 @@
 
 ![SOC Home Lab — SIEM, Detection Engineering & SOAR Automation](./soc-homelab-cover.png)
 
+![Splunk](https://img.shields.io/badge/Splunk-Enterprise-black?style=flat-square&logo=splunk&logoColor=white)
+![pfSense](https://img.shields.io/badge/pfSense-Firewall-0094CE?style=flat-square&logo=pfsense&logoColor=white)
+![Active Directory](https://img.shields.io/badge/Windows_Server-Active_Directory-0078D4?style=flat-square&logo=windows&logoColor=white)
+![Azure](https://img.shields.io/badge/Microsoft_Azure-Hybrid_Monitoring-0078D4?style=flat-square&logo=microsoftazure&logoColor=white)
+![Docker](https://img.shields.io/badge/Shuffle_SOAR-Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Kali Linux](https://img.shields.io/badge/Kali_Linux-Attacker_Node-557C94?style=flat-square&logo=kalilinux&logoColor=white)
+![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-D32F2F?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-2E7D32?style=flat-square)
+
 > A fully self-built Security Operations Center lab simulating a realistic enterprise environment: Active Directory, endpoint telemetry, a SIEM pipeline, custom detections mapped to MITRE ATT&CK, threat hunting, hybrid cloud monitoring, and a working SOAR automation layer with human-in-the-loop approvals.
 
 **Author:** Ahmed Mostafa Hussein<br>

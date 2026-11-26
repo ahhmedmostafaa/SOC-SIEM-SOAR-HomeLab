@@ -5,6 +5,7 @@
 > A fully self-built Security Operations Center lab simulating a realistic enterprise environment: Active Directory, endpoint telemetry, a SIEM pipeline, custom detections mapped to MITRE ATT&CK, threat hunting, hybrid cloud monitoring, and a working SOAR automation layer with human-in-the-loop approvals.
 
 **Author:** Ahmed Mostafa Hussein
+
 **Status:** Actively maintained | Built end-to-end from scratch on a single workstation
 
 ---
@@ -166,13 +167,13 @@ SOC-SIEM-SOAR-HomeLab/
 
 ## 🔧 Tech Stack
 
-**SIEM / Data Platform:** Splunk Enterprise 10.6.1.1, Splunk Universal Forwarder, HTTP Event Collector (HEC)
-**Infrastructure:** VMware Workstation, pfSense (firewall/router), Windows Server (AD DS, GPO), Windows 10/11 endpoints, Ubuntu Server
-**Telemetry:** Sysmon (SwiftOnSecurity config), Windows Advanced Audit Policy, PowerShell Script Block Logging, pfSense filterlog (syslog)
-**Offense / Validation:** Kali Linux, Hydra, Nmap
-**Cloud:** Microsoft Azure (Azure for Students), ngrok (secure tunneling)
-**Automation / SOAR:** Shuffle (self-hosted via Docker Compose), Telegram Bot API, VirusTotal API, AbuseIPDB API
-**Frameworks:** MITRE ATT&CK
+- **SIEM / Data Platform:** Splunk Enterprise 10.6.1.1, Splunk Universal Forwarder, HTTP Event Collector (HEC)
+- **Infrastructure:** VMware Workstation, pfSense (firewall/router), Windows Server (AD DS, GPO), Windows 10/11 endpoints, Ubuntu Server
+- **Telemetry:** Sysmon (SwiftOnSecurity config), Windows Advanced Audit Policy, PowerShell Script Block Logging, pfSense filterlog (syslog)
+- **Offense / Validation:** Kali Linux, Hydra, Nmap
+- **Cloud:** Microsoft Azure (Azure for Students), ngrok (secure tunneling)
+- **Automation / SOAR:** Shuffle (self-hosted via Docker Compose), Telegram Bot API, VirusTotal API, AbuseIPDB API
+- **Frameworks:** MITRE ATT&CK
 
 ---
 

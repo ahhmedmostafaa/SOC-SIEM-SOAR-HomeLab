@@ -9,7 +9,7 @@ The end-to-end flow is shown in two stages: how an attack becomes an alert, and 
 ### 1. Detection pipeline — attack to alert
 
 ```mermaid
-%%{init: {"flowchart": {"nodeSpacing": 26, "rankSpacing": 38, "padding": 10}}}%%
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 30, "padding": 8}}}%%
 flowchart TB
     subgraph ATK["Attack Paths"]
         KALI["🧨 Kali<br/>internal attacker"]
@@ -29,13 +29,7 @@ flowchart TB
         AUTHLOG["auth.log"]
     end
 
-    subgraph SIEM["Splunk Enterprise"]
-        direction LR
-        IDX[("Indexes<br/>wineventlog · sysmon<br/>pfsense · azure")]
-        SPL["10 detections (SPL)<br/>MITRE ATT&CK mapped"]
-        ALERT["Scheduled alerts<br/>cron · throttled · suppressed"]
-        IDX --> SPL --> ALERT
-    end
+    SIEM[("📚 Splunk Enterprise<br/>Indexes: wineventlog · sysmon · pfsense · azure<br/>10 SPL detections, MITRE ATT&CK mapped<br/>Scheduled alerts: cron · throttled · suppressed")]
 
     DASH["📊 SOC Detection<br/>Overview Dashboard"]
     SOAR["➡️ SOAR response<br/>(next diagram)"]
@@ -55,7 +49,7 @@ flowchart TB
     SIEM --> DASH
     SIEM -- "webhook" --> SOAR
 
-    style IDX fill:#2e7d32,color:#fff
+    style SIEM fill:#2e7d32,color:#fff
     style AZ fill:#0078d4,color:#fff
     style SOAR fill:#e65100,color:#fff
 ```
@@ -67,20 +61,18 @@ flowchart TB
 flowchart TB
     ALERT["📡 Splunk scheduled alert"]
 
-    subgraph SOAR[" "]
-        ROUTER["SOC-Master-Playbook<br/>(router)"]
-        ENRICH["Enrich-IP /<br/>Enrich-Identity"]
-        APPROVE["Check-Telegram-Approvals<br/>(human-in-the-loop)"]
-        BLOCK["Block-IP-pfSense<br/>(live remediation)"]
-        NOOP["❌ No action taken"]
-    end
+    ROUTER["SOC-Master-Playbook<br/>(router · Shuffle on Docker)"]
+    ENRICH["Enrich-IP /<br/>Enrich-Identity"]
+    APPROVE["Check-Telegram-Approvals<br/>(human-in-the-loop)"]
+    BLOCK["Block-IP-pfSense<br/>(live remediation)"]
+    NOOP["❌ No action taken"]
 
     TG["📱 Telegram bot<br/>alert + Block / Ignore"]
     MAIL["📧 Email incident report"]
 
     FW["🔥 pfSense<br/>SOAR_Blocked_IPs alias"]
 
-    ALERT -- "webhook → Shuffle (Docker)" --> ROUTER
+    ALERT -- webhook --> ROUTER
     ROUTER --> ENRICH
     ROUTER --> MAIL
     ENRICH --> TG

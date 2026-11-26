@@ -49,6 +49,8 @@ flowchart TB
     SIEM --> DASH
     SIEM -- "webhook" --> SOAR
 
+    style KALI fill:#c62828,color:#fff
+    style INET fill:#c62828,color:#fff
     style SIEM fill:#2e7d32,color:#fff
     style AZ fill:#0078d4,color:#fff
     style SOAR fill:#e65100,color:#fff

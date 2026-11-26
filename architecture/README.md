@@ -81,11 +81,12 @@ flowchart TB
     APPROVE -- ignored --> NOOP
     BLOCK --> FW
 
-    style TG fill:#0088cc,color:#fff
+    style TG fill:#5f6368,color:#fff
     style MAIL fill:#5f6368,color:#fff
     style ROUTER fill:#e65100,color:#fff
-    style APPROVE fill:#0277bd,color:#fff
-    style BLOCK fill:#2e7d32,color:#fff
+    style ENRICH fill:#e65100,color:#fff
+    style APPROVE fill:#e65100,color:#fff,stroke:#ffd54f,stroke-width:4px
+    style BLOCK fill:#e65100,color:#fff
 ```
 
 ## Layer-by-Layer Design Summary

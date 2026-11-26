@@ -1,5 +1,7 @@
 # 🛡️ SOC Home Lab — Enterprise-Style SIEM, Detection Engineering & SOAR Automation
 
+![SOC Home Lab — SIEM, Detection Engineering & SOAR Automation](./soc-homelab-cover.png)
+
 > A fully self-built Security Operations Center lab simulating a realistic enterprise environment: Active Directory, endpoint telemetry, a SIEM pipeline, custom detections mapped to MITRE ATT&CK, threat hunting, hybrid cloud monitoring, and a working SOAR automation layer with human-in-the-loop approvals.
 
 **Author:** Ahmed Mostafa Hussein
@@ -12,6 +14,14 @@
 Most "SOC home lab" projects stop at installing Splunk and triggering one brute-force alert. This project goes further: it builds a small but realistic **enterprise network** (domain controller, endpoints, firewall, attacker machine), wires up **real telemetry pipelines**, writes **custom detections** for the attacks actually executed in the lab, performs **manual threat hunting**, extends monitoring into a **hybrid cloud asset (Azure)**, and — critically — closes the loop with a **SOAR platform** that enriches, notifies, and (with analyst approval) remediates automatically.
 
 Every alert in this repo fired because an attack was actually run against the lab. Nothing here is theoretical.
+
+---
+
+## 🎬 Live Demo
+
+A recorded walkthrough of the lab in action:
+
+https://github.com/user-attachments/assets/91c96947-8d95-4789-82cb-275f28695cde
 
 ---
 
@@ -172,6 +182,3 @@ Beyond automated alerting, four manual hunts were performed to search for activi
 ## 🙏 Acknowledgements
 
 Built as a self-directed learning project to develop and demonstrate practical SOC Analyst (L1/L2) skills: SIEM administration, detection engineering, threat hunting, and security automation.
-
-
-https://github.com/user-attachments/assets/91c96947-8d95-4789-82cb-275f28695cde

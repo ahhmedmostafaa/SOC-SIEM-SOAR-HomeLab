@@ -9,6 +9,26 @@
 
 ---
 
+## 📑 Table of Contents
+
+- [Why This Project Exists](#-why-this-project-exists)
+- [Live Demo](#-live-demo)
+- [Architecture Overview](#architecture-overview)
+- [What's Inside This Repo](#-whats-inside-this-repo)
+- [Repository Structure](#-repository-structure)
+- [Tech Stack](#-tech-stack)
+- [Detection Coverage (MITRE ATT&CK)](#-detection-coverage-mitre-attck)
+- [SOAR Automation Highlights](#-soar-automation-highlights)
+- [Hybrid Cloud Monitoring](#hybrid-cloud-monitoring)
+- [Dashboard](#-dashboard)
+- [Threat Hunting](#-threat-hunting)
+- [Lab Safety Notes](#lab-safety-notes)
+- [Acknowledgements](#-acknowledgements)
+- [License](#-license)
+- [Contact](#-contact)
+
+---
+
 ## 📌 Why This Project Exists
 
 Most "SOC home lab" projects stop at installing Splunk and triggering one brute-force alert. This project goes further: it builds a small but realistic **enterprise network** (domain controller, endpoints, firewall, attacker machine), wires up **real telemetry pipelines**, writes **custom detections** for the attacks actually executed in the lab, performs **manual threat hunting**, extends monitoring into a **hybrid cloud asset (Azure)**, and — critically — closes the loop with a **SOAR platform** that enriches, notifies, and (with analyst approval) remediates automatically.
@@ -24,6 +44,8 @@ A recorded walkthrough of the lab in action:
 https://github.com/user-attachments/assets/91c96947-8d95-4789-82cb-275f28695cde
 
 ---
+
+<a id="architecture-overview"></a>
 
 ## 🏗️ Architecture Overview
 
@@ -91,6 +113,57 @@ flowchart LR
 
 ---
 
+## 📁 Repository Structure
+
+```text
+SOC-SIEM-SOAR-HomeLab/
+├── README.md
+├── LICENSE
+├── soc-homelab-cover.png
+│
+├── architecture/
+│   └── README.md                       # Data-flow diagrams, layer summary, design decisions
+│
+├── infrastructure-setup/
+│   ├── README.md                       # Build order and rationale
+│   ├── 01-network-and-pfsense.md
+│   ├── 02-active-directory.md
+│   ├── 03-sysmon-and-audit-policy.md
+│   ├── 04-splunk-installation.md
+│   └── screenshots/
+│
+├── detections/
+│   ├── README.md                       # Detection index, shared alert schema, severity logic
+│   ├── 01-… to 10-*.md                 # One write-up per detection (10)
+│   └── screenshots/
+│
+├── threat-hunting/
+│   ├── README.md
+│   ├── 01-… to 04-*.md                 # One write-up per hunt (4)
+│   └── screenshots/
+│
+├── cloud-integration/
+│   ├── README.md
+│   ├── 01-azure-vm-deployment.md
+│   ├── 02-hybrid-log-forwarding.md
+│   └── screenshots/
+│
+├── soar-automation/
+│   ├── README.md
+│   ├── 01-soc-master-playbook.md
+│   ├── 02-enrich-ip.md
+│   ├── 03-enrich-identity.md
+│   ├── 04-block-ip-pfsense.md
+│   ├── 05-check-telegram-approvals.md
+│   └── screenshots/
+│
+└── dashboards/
+    ├── README.md                       # The seven-panel SOC Detection Overview dashboard
+    └── screenshots/
+```
+
+---
+
 ## 🔧 Tech Stack
 
 **SIEM / Data Platform:** Splunk Enterprise 10.6.1.1, Splunk Universal Forwarder, HTTP Event Collector (HEC)
@@ -136,6 +209,8 @@ See [`soar-automation/`](./soar-automation) for workflow diagrams and design not
 
 ---
 
+<a id="hybrid-cloud-monitoring"></a>
+
 ## ☁️ Hybrid Cloud Monitoring
 
 To demonstrate monitoring beyond the local network, the lab extends into Microsoft Azure:
@@ -170,6 +245,8 @@ Beyond automated alerting, four manual hunts were performed to search for activi
 
 ---
 
+<a id="lab-safety-notes"></a>
+
 ## ⚠️ Lab Safety Notes
 
 - All networks are fully isolated from the host machine and home network (no bridged adapters, DHCP disabled on internal segments).
@@ -182,6 +259,12 @@ Beyond automated alerting, four manual hunts were performed to search for activi
 ## 🙏 Acknowledgements
 
 Built as a self-directed learning project to develop and demonstrate practical SOC Analyst (L1/L2) skills: SIEM administration, detection engineering, threat hunting, and security automation.
+
+---
+
+## 📄 License
+
+This project is released under the [MIT License](./LICENSE).
 
 ---
 

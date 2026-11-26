@@ -58,7 +58,6 @@ flowchart LR
     LANIF -. syslog .-> SPLUNK
 
     style SPLUNK fill:#2e7d32,color:#fff
-    style DC fill:#1565c0,color:#fff
     style KALI fill:#c62828,color:#fff
     style AZURE fill:#0078d4,color:#fff
     style NGROK fill:#616161,color:#fff

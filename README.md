@@ -182,3 +182,10 @@ Beyond automated alerting, four manual hunts were performed to search for activi
 ## 🙏 Acknowledgements
 
 Built as a self-directed learning project to develop and demonstrate practical SOC Analyst (L1/L2) skills: SIEM administration, detection engineering, threat hunting, and security automation.
+
+---
+
+## 📬 Contact
+
+- **LinkedIn:** [ahmedmostafahussein](https://www.linkedin.com/in/ahmedmostafahussein)
+- **Email:** [a7medmostafa7777@gmail.com](mailto:a7medmostafa7777@gmail.com)

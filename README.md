@@ -178,7 +178,6 @@ Built as a self-directed learning project to develop and demonstrate practical S
 
 
 
-https://github.com/user-attachments/assets/50feac41-dfd8-4725-b325-4d198f4701d0
 
 
 

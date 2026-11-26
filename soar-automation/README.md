@@ -26,7 +26,7 @@ There are exactly **ten detections** in this lab (see [`detections/`](../detecti
 
 ## Deployment Notes: Running Shuffle on a Resource-Constrained Host
 
-Shuffle's Docker Compose stack runs five containers (`backend`, `frontend`, `security`, `orborus`, and `opensearch` as the datastore). Deploying it on the same 4 GB VM already running Splunk Enterprise was tested deliberately rather than assumed to be fine or immediately dismissed as impossible:
+Shuffle's Docker Compose stack runs five containers (`backend`, `frontend`, `security`, `orborus`, and `opensearch` as the datastore). Deploying it on the same 7 GB VM already running Splunk Enterprise was tested deliberately rather than assumed to be fine or immediately dismissed as impossible:
 
 - Installing Docker and running `docker compose up -d` initially failed with `invalid spec: :/shuffle-apps:z: empty section between colons` — caused by a missing local bind-mount directory (`shuffle-database/`, `shuffle-apps/`) that the compose file expected to already exist. Creating the directories manually resolved it.
 - Immediately after all five containers reported `Up`, `free -h` showed **available memory had dropped to ~33 MB**, with the system swapping — a genuinely dangerous level that briefly took the co-located Splunk service down (`ERR_CONNECTION_REFUSED` on port 8000).

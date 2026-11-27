@@ -50,7 +50,7 @@ Every alert in this repo fired because an attack was actually run against the la
 
 A recorded walkthrough of the lab in action:
 
-https://github.com/user-attachments/assets/91c96947-8d95-4789-82cb-275f28695cde
+https://github.com/user-attachments/assets/eeb28f0b-267a-473a-8b0e-996dc8504940
 
 ---
 

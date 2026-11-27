@@ -267,7 +267,13 @@ Beyond automated alerting, four manual hunts were performed to search for activi
 
 ## 🙏 Acknowledgements
 
-Built as a self-directed learning project to develop and demonstrate practical SOC Analyst (L1/L2) skills: SIEM administration, detection engineering, threat hunting, and security automation.
+This lab builds on the work of the open-source and security community:
+
+- [SwiftOnSecurity](https://github.com/SwiftOnSecurity/sysmon-config) — Sysmon configuration baseline
+- [MITRE ATT&CK](https://attack.mitre.org) — adversary technique framework
+- [Splunk Documentation](https://docs.splunk.com) — SPL and Universal Forwarder reference
+- [Shuffle](https://shuffler.io) — open-source SOAR platform
+- [pfSense](https://www.pfsense.org) — open-source firewall
 
 ---
 
